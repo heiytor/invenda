@@ -4,6 +4,7 @@ import (
 	"github.com/heiytor/invenda/api/route/pkg/echoutils"
 	"github.com/heiytor/invenda/api/route/pkg/middleware"
 	"github.com/labstack/echo/v4"
+	echomiddleware "github.com/labstack/echo/v4/middleware"
 	"github.com/ziflex/lecho/v3"
 )
 
@@ -20,6 +21,7 @@ func New(logger *lecho.Logger) *echo.Echo {
 	e.Binder = &echoutils.Binder{}
 	e.Validator = &echoutils.Validator{}
 
+	e.Use(echomiddleware.RequestID())
 	e.Use(middleware.Logger(logger))
 
 	retisterPublicRoutes(e)
