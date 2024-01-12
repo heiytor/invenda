@@ -1,22 +1,20 @@
 package main
 
 import (
-	"net/http"
+	"os"
+	"time"
 
-	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
+	"github.com/heiytor/invenda/api/route"
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
+	"github.com/ziflex/lecho/v3"
 )
 
 func main() {
-	e := echo.New()
+	logger := log.Output(zerolog.ConsoleWriter{Out: os.Stdout, TimeFormat: time.RFC3339})
+	log.Logger = logger
 
-	e.Use(middleware.Logger())
-
-	e.GET("/healthcheck", HealthCheck)
+	e := route.New(lecho.From(logger))
 
 	e.Logger.Fatal(e.Start(":3333"))
-}
-
-func HealthCheck(c echo.Context) error {
-	return c.NoContent(http.StatusOK)
 }

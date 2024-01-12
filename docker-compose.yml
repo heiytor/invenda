@@ -13,7 +13,7 @@ services:
     ports:
       - 3333:3333
     # Only necessary in prod
-    # healthcheck:
-    #   test: "curl -f http://api:3333/healthcheck || exit 1"
-    #   interval: 5s
-    #   start_period: 1s
+    healthcheck:
+      test: "curl -f http://api:3333/healthcheck || exit 1"
+      interval: 5s
+      start_period: 1s
