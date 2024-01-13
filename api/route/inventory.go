@@ -6,50 +6,62 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-var inventoryRoutes = []*route{
-	inventoryGet,
-	inventoryList,
-	inventoryCreate,
-	inventoryUpdate,
-	inventoryDelete,
+func (rs *Routes) inventoryRoutes() []*route {
+	return []*route{
+		rs.inventoryGet(),
+		rs.inventoryList(),
+		rs.inventoryCreate(),
+		rs.inventoryUpdate(),
+		rs.inventoryDelete(),
+	}
 }
 
-var inventoryGet = &route{
-	method: http.MethodGet,
-	path:   "/inventory/:item",
-	handler: func(c echo.Context) error {
-		return c.NoContent(http.StatusTeapot)
-	},
+func (rs *Routes) inventoryGet() *route {
+	return &route{
+		method: http.MethodGet,
+		path:   "/inventory/:item",
+		handler: func(c echo.Context) error {
+			return c.NoContent(http.StatusTeapot)
+		},
+	}
 }
 
-var inventoryList = &route{
-	method: http.MethodGet,
-	path:   "/inventory",
-	handler: func(c echo.Context) error {
-		return c.NoContent(http.StatusTeapot)
-	},
+func (rs *Routes) inventoryList() *route {
+	return &route{
+		method: http.MethodGet,
+		path:   "/inventory",
+		handler: func(c echo.Context) error {
+			return c.NoContent(http.StatusTeapot)
+		},
+	}
 }
 
-var inventoryCreate = &route{
-	method: http.MethodPost,
-	path:   "/inventory",
-	handler: func(c echo.Context) error {
-		return c.NoContent(http.StatusTeapot)
-	},
+func (rs *Routes) inventoryCreate() *route {
+	return &route{
+		method: http.MethodPost,
+		path:   "/inventory",
+		handler: func(c echo.Context) error {
+			return c.NoContent(http.StatusTeapot)
+		},
+	}
 }
 
-var inventoryUpdate = &route{
-	method: http.MethodPatch,
-	path:   "/inventory/:item",
-	handler: func(c echo.Context) error {
-		return c.NoContent(http.StatusTeapot)
-	},
+func (rs *Routes) inventoryUpdate() *route {
+	return &route{
+		method: http.MethodPatch,
+		path:   "/inventory/:item",
+		handler: func(c echo.Context) error {
+			return c.NoContent(http.StatusTeapot)
+		},
+	}
 }
 
-var inventoryDelete = &route{
-	method: http.MethodDelete,
-	path:   "/inventory/:item",
-	handler: func(c echo.Context) error {
-		return c.NoContent(http.StatusTeapot)
-	},
+func (rs *Routes) inventoryDelete() *route {
+	return &route{
+		method: http.MethodDelete,
+		path:   "/inventory/:item",
+		handler: func(c echo.Context) error {
+			return c.NoContent(http.StatusTeapot)
+		},
+	}
 }
