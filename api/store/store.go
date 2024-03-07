@@ -11,9 +11,12 @@ import (
 type store struct {
 	client *mongo.Client
 	db     *mongo.Database
+	users  *mongo.Collection // users é um wrapper para a coleção "user"
 }
 
-type Store interface{}
+type Store interface {
+	User
+}
 
 func New(ctx context.Context, conn string) Store {
 	client, db, err := connectDB(ctx, conn)
@@ -21,7 +24,10 @@ func New(ctx context.Context, conn string) Store {
 		panic(err)
 	}
 
-	return &store{client: client, db: db}
+	store := &store{client: client, db: db}
+	store.users = db.Collection("user")
+
+	return store
 }
 
 func connectDB(ctx context.Context, conn string) (*mongo.Client, *mongo.Database, error) {

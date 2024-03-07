@@ -16,14 +16,24 @@ services:
       - mongo
     networks:
       - invenda
-    # Only necessary in prod
-    # healthcheck:
-    #   test: "curl -f http://api:3333/healthcheck || exit 1"
-    #   interval: 5s
-    #   start_period: 1s
+    healthcheck:
+      test: "curl -f http://api:3333/healthcheck || exit 1"
+      interval: 30s
+      start_period: 10s
 
   mongo:
     image: mongo:7.0.5
+    restart: unless-stopped
+    # command: ["--replSet", "rs", "--bind_ip_all"]
+    networks:
+      - invenda
+    # healthcheck:
+    #   test: 'test $$(echo "rs.initiate({ _id: ''rs'', members: [ { _id: 0, host: ''mongo:27017'' } ] }).ok || rs.status().ok" | mongo --quiet) -eq 1'
+    #   interval: 30s
+    #   start_period: 10s
+
+  redis:
+    image: redis
     restart: unless-stopped
     networks:
       - invenda

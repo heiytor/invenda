@@ -6,6 +6,7 @@ import (
 	"github.com/heiytor/invenda/api/service"
 	"github.com/labstack/echo/v4"
 	echomiddleware "github.com/labstack/echo/v4/middleware"
+	"github.com/rs/zerolog/log"
 	"github.com/ziflex/lecho/v3"
 )
 
@@ -39,13 +40,19 @@ func New(service service.Service, logger *lecho.Logger) *Routes {
 }
 
 func (rs *Routes) bindRoutes() {
-	group := rs.E.Group("/api")
-
 	routes := []*route{}
+
 	routes = append(routes, rs.healthcheck())
 	routes = append(routes, rs.inventoryRoutes()...)
+	routes = append(routes, rs.userRoutes()...)
 
 	for _, r := range routes {
-		group.Add(r.method, r.path, r.handler)
+		log.
+			Info().
+			Str("method", r.method).
+			Str("path", r.path).
+			Msg("Registering route")
+
+		rs.E.Add(r.method, r.path, r.handler)
 	}
 }

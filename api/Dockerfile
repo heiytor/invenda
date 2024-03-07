@@ -1,6 +1,8 @@
 # stage used by targets as a base
 FROM golang:1.21.6-alpine3.19 AS base
 
+RUN apk add curl
+
 WORKDIR $GOPATH/src/github.com/heiytor/invenda/api
 
 COPY api/go.mod api/go.sum .
@@ -24,4 +26,3 @@ ENTRYPOINT /entrypoint.sh
 FROM base AS prod
 # TODO
 
-# RUN apk add curl

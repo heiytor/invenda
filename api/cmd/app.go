@@ -18,7 +18,7 @@ func main() {
 
 	ctx := context.Background()
 
-	store := store.New(ctx)
+	store := store.New(ctx, "mongodb://mongo:27017/main")
 	service := service.New(store)
 	routes := route.New(service, lecho.From(log.Logger))
 

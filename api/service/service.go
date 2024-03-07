@@ -8,7 +8,9 @@ type service struct {
 	store store.Store
 }
 
-type Service interface{}
+type Service interface {
+	User
+}
 
 func New(store store.Store) Service {
 	return &service{store: store}
