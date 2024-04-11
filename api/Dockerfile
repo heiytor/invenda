@@ -5,6 +5,11 @@ RUN apk add curl
 
 WORKDIR $GOPATH/src/github.com/heiytor/invenda/api
 
+# Copy API secret keys
+RUN mkdir -p ./../secrets
+COPY secrets/api-private.pem ./../secrets
+COPY secrets/api-public.pem ./../secrets
+
 COPY api/go.mod api/go.sum .
 RUN go mod download
 

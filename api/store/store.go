@@ -3,47 +3,44 @@ package store
 import (
 	"context"
 
-	"go.mongodb.org/mongo-driver/mongo"
+	mongodb "go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/x/mongo/driver/connstring"
 )
 
-type store struct {
-	client *mongo.Client
-	db     *mongo.Database
-	users  *mongo.Collection // users é um wrapper para a coleção "user"
+type Store struct {
+	client *mongodb.Client
+	db     *mongodb.Database
+
+	// User handle all user-related operations.
+	User User
 }
 
-type Store interface {
-	User
-}
-
-func New(ctx context.Context, conn string) Store {
-	client, db, err := connectDB(ctx, conn)
+func Connect(ctx context.Context, uri string) (*mongodb.Client, string, error) {
+	connstr, err := connstring.ParseAndValidate(uri)
 	if err != nil {
-		panic(err)
+		return nil, "", err
 	}
 
-	store := &store{client: client, db: db}
-	store.users = db.Collection("user")
-
-	return store
-}
-
-func connectDB(ctx context.Context, conn string) (*mongo.Client, *mongo.Database, error) {
-	connStr, err := connstring.ParseAndValidate(conn)
+	client, err := mongodb.Connect(ctx, options.Client().ApplyURI(connstr.Original))
 	if err != nil {
-		return nil, nil, err
-	}
-
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI(connStr.Original))
-	if err != nil {
-		return nil, nil, err
+		return nil, "", err
 	}
 
 	if err := client.Ping(ctx, nil); err != nil {
-		return nil, nil, err
+		return nil, "", err
 	}
 
-	return client, client.Database(connStr.Database), nil
+	return client, connstr.Database, nil
+}
+
+func New(ctx context.Context, client *mongodb.Client, db string) (*Store, error) {
+	store := &Store{
+		client: client,
+		db:     client.Database(db),
+	}
+
+	store.User = &user{c: store.db.Collection("user")}
+
+	return store, nil
 }

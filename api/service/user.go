@@ -2,34 +2,85 @@ package service
 
 import (
 	"context"
-	"time"
+	"net/http"
+	"strings"
 
 	"github.com/heiytor/invenda/api/pkg/errors"
+	"github.com/heiytor/invenda/api/pkg/hash"
+	"github.com/heiytor/invenda/api/pkg/jwt"
 	"github.com/heiytor/invenda/api/pkg/models"
 	"github.com/heiytor/invenda/api/pkg/requests"
+	"github.com/heiytor/invenda/api/store"
 )
 
 type User interface {
-	UserCreate(ctx context.Context, req *requests.UserCreate) (string, error)
+	CreateUser(ctx context.Context, req *requests.CreateUser) (insertedID string, err error)
+	UpdateUser(ctx context.Context, id string, req *requests.UpdateUser) (usr *models.User, err error)
+	AuthUser(ctx context.Context, req *requests.AuthUser) (token *models.UserClaims, err error)
 }
 
-func (s *service) UserCreate(ctx context.Context, req *requests.UserCreate) (string, *errors.Error) {
-	if conflicts, _ := s.store.UserConflicts(ctx, map[string]string{"email": req.Email}); len(conflicts) > 0 {
-		return "", errors.New().Code(422).Attr("conflicts", "email").Msg("")
+func (s *service) CreateUser(ctx context.Context, req *requests.CreateUser) (string, error) {
+	if conflicts, _ := s.store.User.Conflicts(ctx, &models.User{Email: req.Email}); len(conflicts) > 0 {
+		return "", errors.
+			New().
+			Code(http.StatusConflict).
+			Attr("entity", "user").
+			Attr("conflicts", conflicts).
+			Layer(errors.LayerService).
+			Msg(errors.MsgConflict)
 	}
 
-	user := &models.User{
-		Name:      req.Name,
-		Email:     req.Email,
-		Confirmed: false,
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
+	usr := &models.User{
+		Name:     req.Name,
+		Email:    strings.ToLower(req.Email),
+		Password: hash.New(req.Password, hash.DefaultOptions),
 	}
 
-	insertedID, err := s.store.UserCreate(ctx, user)
+	insertedID, err := s.store.User.Create(ctx, usr)
+	return insertedID, err // TODO: map this error
+}
+
+func (s *service) UpdateUser(ctx context.Context, id string, req *requests.UpdateUser) (*models.User, error) {
+	if conflicts, _ := s.store.User.Conflicts(ctx, &models.User{Email: req.Email}); len(conflicts) > 0 {
+		return nil, errors.
+			New().
+			Code(http.StatusConflict).
+			Attr("entity", "user").
+			Attr("conflicts", conflicts).
+			Layer(errors.LayerService).
+			Msg(errors.MsgConflict)
+	}
+
+	changes := &models.UserChanges{
+		Name:  req.Name,
+		Email: req.Email,
+	}
+
+	if req.Password != "" {
+		changes.Password = hash.New(req.Password, hash.DefaultOptions)
+	}
+
+	if err := s.store.User.Update(ctx, id, changes); err != nil {
+		return nil, err // TODO: map this error
+	}
+
+	usr, err := s.store.User.GetByID(ctx, id, store.RemoveUserPassword)
+	return usr, err // TODO: map this error
+}
+
+func (s *service) AuthUser(ctx context.Context, req *requests.AuthUser) (*models.UserClaims, error) {
+	usr, err := s.store.User.GetByEmail(ctx, req.Identifier)
 	if err != nil {
-		panic(err)
+		return nil, err // TODO: map err
 	}
 
-	return insertedID, nil
+	if !hash.Compare(req.Password, usr.Password) {
+		return nil, errors.New().Msg("foo") //TODO: map err
+	}
+
+	claims := &models.UserClaims{Email: usr.Email}
+	claims.RegisteredClaims.Subject = usr.ID
+	claims.Token = jwt.Encode(claims)
+
+	return claims, nil
 }

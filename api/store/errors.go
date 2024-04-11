@@ -7,7 +7,11 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-// fromMongoError converte um erro do mongo em um erro conhecido e gerenciado pela aplicação.
+var (
+	ErrUnexpected = errors.New("unexpected Error")
+	ErrNotFound   = errors.New("document not found")
+)
+
 func fromMongoError(err error) error {
 	switch {
 	case err == mongo.ErrNoDocuments, err == io.EOF:
@@ -20,8 +24,3 @@ func fromMongoError(err error) error {
 		return errors.Join(ErrUnexpected, err)
 	}
 }
-
-var (
-	ErrUnexpected = errors.New("Unexpected Error")
-	ErrNotFound   = errors.New("Document not found")
-)

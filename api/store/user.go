@@ -3,77 +3,118 @@ package store
 import (
 	"context"
 
+	"github.com/heiytor/invenda/api/pkg/clock"
 	"github.com/heiytor/invenda/api/pkg/models"
 	"github.com/oklog/ulid/v2"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
-// User define uma série de operações relacionadas a usuarios.
-type User interface {
-	// UserGet recupera um usuario com ID `id` do banco de dados. Retorna um ErrNotFound quando nenhum usuario é encotrado.
-	UserGet(ctx context.Context, id string) (*models.User, error)
+// GetUserOption TODO
+type GetUserOption func(u *models.User) error
 
-	// UserConflicts verifica se algum campo de `fields` existe no banco de dados. Retorna uma lista dos dados conflitantes
-	// ou um erro.
-	UserConflicts(ctx context.Context, fields map[string]string) ([]string, error)
-
-	// UserCreate cria um novo usuario no banco de dados. Retorna o ID inserido ou um erro.
-	UserCreate(ctx context.Context, user *models.User) (string, error)
-
-	// UserSetConfirmed marca um usuario com ID `id` como confirmado ou não.
-	UserSetConfirmed(ctx context.Context, id string, confirmed bool) error
+// RemoveUserPassword sets the user's password to an empty string
+func RemoveUserPassword(u *models.User) error {
+	u.Password = ""
+	return nil
 }
 
-func (s *store) UserGet(ctx context.Context, id string) (*models.User, error) {
-	user := new(models.User)
+type User interface {
+	// Create creates a new user with the provided data. It returns the inserted ID or an error
+	// if any.
+	Create(ctx context.Context, user *models.User) (insertedID string, err error)
 
-	query := s.users.FindOne(ctx, bson.M{"_id": id})
-	if err := query.Decode(user); err != nil {
+	// GetByID retrieves a user with the specified ID. It returns the found user or an error if any.
+	GetByID(ctx context.Context, id string, opts ...GetUserOption) (user *models.User, err error)
+
+	// GetByEmail retrieves a user with the specified email. It returns the found user or an error if any.
+	GetByEmail(ctx context.Context, email string, opts ...GetUserOption) (user *models.User, err error)
+
+	// Conflicts reports whether the fields of the provided target already exist in the database.
+	// It returns a list of conflicted fields or an error if any.
+	Conflicts(ctx context.Context, target *models.User) (conflicts []string, err error)
+
+	// TODO
+	Update(ctx context.Context, id string, changes *models.UserChanges) (err error)
+}
+
+type user struct {
+	c *mongo.Collection // c is the "user" collection
+}
+
+var _ User = (*user)(nil)
+
+func (u *user) Create(ctx context.Context, usr *models.User) (string, error) {
+	usr.ID = "usr_" + ulid.Make().String()
+	usr.CreatedAt = clock.Now()
+	usr.UpdatedAt = clock.Now()
+
+	if _, err := u.c.InsertOne(ctx, usr); err != nil {
+		return "", fromMongoError(err)
+	}
+
+	return usr.ID, nil
+}
+
+func (u *user) GetByID(ctx context.Context, id string, opts ...GetUserOption) (*models.User, error) {
+	usr := new(models.User)
+	if err := u.c.FindOne(ctx, bson.M{"_id": id}).Decode(usr); err != nil {
 		return nil, fromMongoError(err)
 	}
 
-	return user, nil
-}
-
-// TODO: fazer fields ser uma struct especializada
-func (s *store) UserConflicts(ctx context.Context, fields map[string]string) ([]string, error) {
-	pipeline := []bson.M{}
-
-	if email, ok := fields["email"]; ok && email != "" {
-		pipeline = append(pipeline, bson.M{"$match": bson.M{"email": fields["email"]}})
+	for _, opt := range opts {
+		if err := opt(usr); err != nil {
+			return nil, err
+		}
 	}
 
-	cursor, err := s.users.Aggregate(ctx, pipeline)
+	return usr, nil
+}
+
+func (u *user) GetByEmail(ctx context.Context, email string, opts ...GetUserOption) (*models.User, error) {
+	usr := new(models.User)
+	if err := u.c.FindOne(ctx, bson.M{"email": email}).Decode(usr); err != nil {
+		return nil, fromMongoError(err)
+	}
+
+	for _, opt := range opts {
+		if err := opt(usr); err != nil {
+			return nil, err
+		}
+	}
+
+	return usr, nil
+}
+
+func (u *user) Conflicts(ctx context.Context, target *models.User) ([]string, error) {
+	cursor, err := u.c.Aggregate(ctx, or(target))
 	if err != nil {
-		return []string{}, fromMongoError(err)
+		return nil, fromMongoError(err)
 	}
 	defer cursor.Close(ctx)
 
-	conflicts := []string{}
+	conflicts := make([]string, 0)
 	for cursor.Next(ctx) {
-		user := new(models.User)
-		if err = cursor.Decode(user); err != nil {
-			return []string{}, fromMongoError(err)
+		usr := new(models.User)
+
+		if err = cursor.Decode(usr); err != nil {
+			return nil, fromMongoError(err)
 		}
 
-		if email, ok := fields["email"]; ok && user.Email == email {
-			conflicts = append(conflicts, "email")
-		}
+		conflicts = append(conflicts, partialEqual(target, usr)...)
 	}
 
 	return conflicts, nil
 }
 
-func (s *store) UserCreate(ctx context.Context, user *models.User) (string, error) {
-	// TODO: nós não nos importamos (ainda) com performance
-	user.ID = ulid.Make().String()
-	_, err := s.users.InsertOne(ctx, user)
+func (u *user) Update(ctx context.Context, id string, changes *models.UserChanges) error {
+	if changes == nil {
+		return nil
+	}
 
-	return user.ID, fromMongoError(err)
-}
+	changes.UpdatedAt = clock.Now().UTC()
 
-func (s *store) UserSetConfirmed(ctx context.Context, id string, confirmed bool) error {
-	res, err := s.users.UpdateOne(ctx, bson.M{"_id": id}, bson.M{"$set": bson.M{"confirmed": confirmed}})
+	res, err := u.c.UpdateOne(ctx, bson.M{"_id": id}, bson.M{"$set": changes})
 	if err != nil {
 		return fromMongoError(err)
 	}

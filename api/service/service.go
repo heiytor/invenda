@@ -5,13 +5,13 @@ import (
 )
 
 type service struct {
-	store store.Store
+	store *store.Store
 }
 
 type Service interface {
 	User
 }
 
-func New(store store.Store) Service {
+func New(store *store.Store) Service {
 	return &service{store: store}
 }
