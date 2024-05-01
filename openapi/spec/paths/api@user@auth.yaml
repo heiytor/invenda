@@ -1,0 +1,11 @@
+post:
+  operationId: authUser
+  summary: Auth User
+  tags:
+    - auth
+    - user
+  security:
+    - jwt: []
+  responses:
+    "200":
+      description: Success to authenticate a user.

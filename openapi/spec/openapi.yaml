@@ -1,0 +1,30 @@
+openapi: 3.0.3
+
+info:
+  title: Invenda API
+  version: '0.0.1'
+  description: A simple API to demonstrate OpenAPI specification
+
+servers:
+  - url: http://localhost:3334
+
+tags:
+  - name: auth
+    description: |
+      PLACEHOLDER
+  - name: user
+    description: |
+      PLACEHOLDER
+  - name: namespace
+    description: |
+      PLACEHOLDER
+
+paths:
+  /user:
+    $ref: paths/api@user.yaml
+  /user/auth:
+    $ref: paths/api@user@auth.yaml
+  /namespace:
+    $ref: paths/api@namespace.yaml
+  /namespaces:
+    $ref: paths/api@namespaces.yaml

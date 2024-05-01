@@ -1,0 +1,21 @@
+{
+    "version": "1.0.0",
+    "name": "openapi",
+    "description": "Invenda openapi standard.",
+    "main": "index.js",
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "type": "module",
+    "scripts": {
+        "serve": "node index.js"
+    },
+    "dependencies": {
+        "koa": "^2.15.3",
+        "koa-static": "^5.0.0"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/heiytor/invenda.git"
+    }
+}

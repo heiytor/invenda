@@ -1,0 +1,209 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Invenda API",
+    "version": "0.0.1",
+    "description": "A simple API to demonstrate OpenAPI specification"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3334"
+    }
+  ],
+  "tags": [
+    {
+      "name": "auth",
+      "description": "PLACEHOLDER\n"
+    },
+    {
+      "name": "user",
+      "description": "PLACEHOLDER\n"
+    },
+    {
+      "name": "namespace",
+      "description": "PLACEHOLDER\n"
+    }
+  ],
+  "paths": {
+    "/user": {
+      "get": {
+        "operationId": "getUser",
+        "summary": "Get User",
+        "tags": [
+          "user"
+        ],
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success to get the user."
+          }
+        }
+      },
+      "post": {
+        "operationId": "createUser",
+        "summary": "Create User",
+        "tags": [
+          "user"
+        ],
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Success to create a user."
+          }
+        }
+      },
+      "patch": {
+        "operationId": "updateUser",
+        "summary": "Update User",
+        "tags": [
+          "user"
+        ],
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success to update a user."
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteUser",
+        "summary": "Delete User",
+        "tags": [
+          "user"
+        ],
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Success to delete a user."
+          }
+        }
+      }
+    },
+    "/user/auth": {
+      "post": {
+        "operationId": "authUser",
+        "summary": "Auth User",
+        "tags": [
+          "auth",
+          "user"
+        ],
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success to authenticate a user."
+          }
+        }
+      }
+    },
+    "/namespace": {
+      "get": {
+        "operationId": "getNamespace",
+        "summary": "Get Namespace",
+        "tags": [
+          "namespace"
+        ],
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success to get the namespace."
+          }
+        }
+      },
+      "post": {
+        "operationId": "createNamespace",
+        "summary": "Create Namespace",
+        "tags": [
+          "namespace"
+        ],
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Success to create a namespace."
+          }
+        }
+      },
+      "patch": {
+        "operationId": "updateNamespace",
+        "summary": "Update Namespace",
+        "tags": [
+          "namespace"
+        ],
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success to update a namespace."
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteNamespace",
+        "summary": "Delete Namespace",
+        "tags": [
+          "namespace"
+        ],
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Success to delete a namespace."
+          }
+        }
+      }
+    },
+    "/namespaces": {
+      "get": {
+        "operationId": "listNamespace",
+        "summary": "List Namespaces",
+        "tags": [
+          "namespace"
+        ],
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success to list the namespaces."
+          }
+        }
+      }
+    }
+  },
+  "components": {}
+}

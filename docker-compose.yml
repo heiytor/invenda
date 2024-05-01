@@ -14,10 +14,11 @@ services:
       target: ${INVENDA_ENVIRONMENT}
     volumes:
       - ./api:/go/src/github.com/heiytor/invenda/api
-    ports:
+    ports: # TODO: remove when nginx is up
       - 3333:3333
     depends_on:
       - mongo
+      - redis
     networks:
       - invenda
     healthcheck:
@@ -41,6 +42,27 @@ services:
     restart: unless-stopped
     networks:
       - invenda
+
+  openapi:
+    image: invenda/openapi:${INVENDA_VERSION}
+    restart: unless-stopped
+    environment:
+      - INVENDA_VERSION=${INVENDA_VERSION}
+      - INVENDA_ENVIRONMENT=${INVENDA_ENVIRONMENT}
+    build:
+      context: openapi
+      dockerfile: Dockerfile
+      target: base
+    volumes:
+      - ./openapi:/openapi
+    networks:
+      - invenda
+    ports: # TODO: remove when nginx is up
+      - 3334:3334
+    healthcheck:
+      test: "curl -f http://openapi:3334/healthcheck || exit 1"
+      interval: 30s
+      start_period: 10s
 
 networks:
   invenda:
