@@ -3,8 +3,10 @@ package main
 import (
 	"context"
 	"os"
+	"reflect"
 	"time"
 
+	"github.com/heiytor/invenda/api/pkg/env"
 	"github.com/heiytor/invenda/api/pkg/secretkeys"
 	"github.com/heiytor/invenda/api/route"
 	"github.com/heiytor/invenda/api/route/pkg/middleware"
@@ -25,7 +27,21 @@ func main() {
 			Msg("Unable to parse the secret keys")
 	}
 
-	client, preferredDb, err := store.Connect(ctx, "mongodb://mongo:27017/main")
+	if err := env.Load(); err != nil {
+		log.Panic().
+			Err(err).
+			Msg("Unable to parse the environment variables")
+	}
+
+	v := reflect.ValueOf(env.E())
+	for i := 0; i < v.NumField(); i++ {
+		log.Info().
+			Str("key", v.Type().Field(i).Name).
+			Interface("value", v.Field(i).Interface()).
+			Msg("Environment variable loaded")
+	}
+
+	client, preferredDb, err := store.Connect(ctx, env.E().MongoURI)
 	if err != nil {
 		log.Panic().
 			Err(err).

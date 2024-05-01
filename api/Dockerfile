@@ -1,5 +1,5 @@
 # stage used by targets as a base
-FROM golang:1.21.6-alpine3.19 AS base
+FROM golang:1.22.2-alpine3.19 AS base
 
 RUN apk add curl
 
@@ -14,7 +14,7 @@ COPY api/go.mod api/go.sum .
 RUN go mod download
 
 # development target
-FROM base AS dev
+FROM base AS development
 
 # refresh is used to refreshs the server when any file is updated
 RUN go install github.com/markbates/refresh@v1.11.1
@@ -28,6 +28,6 @@ WORKDIR $GOPATH/src/github.com/heiytor/invenda/api/cmd
 ENTRYPOINT /entrypoint.sh
 
 # production target
-FROM base AS prod
+FROM base AS production
 # TODO
 

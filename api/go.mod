@@ -1,12 +1,15 @@
 module github.com/heiytor/invenda/api
 
-go 1.21.4
+go 1.22.2
 
 require (
+	github.com/golang-jwt/jwt/v5 v5.2.1
+	github.com/google/uuid v1.6.0
 	github.com/gookit/validate v1.5.2
 	github.com/labstack/echo/v4 v4.11.4
 	github.com/oklog/ulid/v2 v2.1.0
 	github.com/rs/zerolog v1.31.0
+	github.com/sethvargo/go-envconfig v1.0.1
 	github.com/shellhub-io/mongotest v0.0.0-20230928124937-e33b07010742
 	github.com/stretchr/testify v1.9.0
 	github.com/testcontainers/testcontainers-go v0.29.1
@@ -36,10 +39,8 @@ require (
 	github.com/go-ole/go-ole v1.3.0 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
-	github.com/golang-jwt/jwt/v5 v5.2.1 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
-	github.com/google/uuid v1.6.0 // indirect
 	github.com/gookit/filter v1.2.1 // indirect
 	github.com/gookit/goutil v0.6.15 // indirect
 	github.com/klauspost/compress v1.17.5 // indirect
