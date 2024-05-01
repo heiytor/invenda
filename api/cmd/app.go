@@ -57,7 +57,8 @@ func main() {
 
 	log.Info().Msg("Connected to MongoDB")
 
-	routes := route.New(service.New(store))
+	service := service.New(store)
+	routes := route.New(service)
 
 	// Configure logger
 	logger := lecho.From(log.Logger)
