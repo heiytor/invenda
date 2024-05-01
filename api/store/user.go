@@ -10,7 +10,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-// GetUserOption TODO
+// GetUserOption is a function to be evaluated when retrieving a user document to modify its content.
 type GetUserOption func(u *models.User) error
 
 // RemoveUserPassword sets the user's password to an empty string
@@ -36,7 +36,8 @@ type User interface {
 	// It returns a list of conflicted fields or an error if any.
 	Conflicts(ctx context.Context, target *models.User) (conflicts []string, err error)
 
-	// TODO
+	// Update modifies a user with the specified ID based on the provided changes. It returns [ErrNotFound]
+	// if no user is found.
 	Update(ctx context.Context, id string, changes *models.UserChanges) (err error)
 
 	// Delete deletes a user with the specified ID. It returns [ErrNotFound] if no user is found.

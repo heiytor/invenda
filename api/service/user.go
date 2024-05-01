@@ -82,10 +82,11 @@ func (s *service) DeleteUser(ctx context.Context, id string) error {
 }
 
 func (s *service) AuthUser(ctx context.Context, req *requests.AuthUser) (*models.UserClaims, string, error) {
-	usr, _ := s.store.User.GetByEmail(ctx, req.Identifier)
-	if usr == nil {
+	usr, err := s.store.User.GetByEmail(ctx, req.Identifier)
+	if err != nil {
 		return nil, "", errors.
 			New().
+			Attr("internal", err).
 			Code(http.StatusNotFound).
 			Layer(errors.LayerService).
 			Msg("wrong identifer and/or password")
@@ -99,7 +100,20 @@ func (s *service) AuthUser(ctx context.Context, req *requests.AuthUser) (*models
 			Msg("wrong identifer and/or password")
 	}
 
-	claims := &models.UserClaims{Email: usr.Email}
+	// TODO: usr.PreferredNamespace
+	ns, err := s.store.Namespace.GetFirst(ctx, usr.ID)
+	if err != nil {
+		return nil, "", errors.
+			New().
+			Attr("internal", err).
+			Code(http.StatusUnauthorized).
+			Layer(errors.LayerService).
+			Msg("user does not have any namespace")
+	}
+
+	member, _ := ns.FindMember(usr.ID)
+
+	claims := &models.UserClaims{Email: usr.Email, Namespace: ns.ID, Permissions: member.Permissions}
 	claims.RegisteredClaims.Subject = usr.ID
 
 	return claims, jwt.Encode(claims), nil

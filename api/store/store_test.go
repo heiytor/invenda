@@ -19,13 +19,8 @@ type Server struct {
 	URI       string
 }
 
-// TODO
 var srv *Server
-
-// TODO
 var s *store.Store
-
-// TODO
 var db *mongo.Database
 
 func TestMain(m *testing.M) {

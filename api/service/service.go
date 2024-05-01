@@ -10,6 +10,7 @@ type service struct {
 
 type Service interface {
 	User
+	Namespace
 }
 
 func New(store *store.Store) Service {

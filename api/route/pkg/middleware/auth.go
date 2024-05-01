@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"net/http"
 	"strings"
 
 	"github.com/heiytor/invenda/api/pkg/errors"
@@ -9,7 +10,9 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-// TODO: maybe we can remove this middleware from here and put in a gateway (like nginx)?
+// Auth is responsible for authenticating a request. It expects an "Authorization" header containing a Bearer token.
+// If no token is provided, the middleware returns a 401 error. Otherwise, the middleware creates a
+// [github.com/heiytor/invenda/api/pkg/models.UserClaims] and stores it in Echo's context.
 func Auth(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		authorization := strings.Split(c.Request().Header.Get("Authorization"), " ")
@@ -17,7 +20,7 @@ func Auth(next echo.HandlerFunc) echo.HandlerFunc {
 		if len(authorization) != 2 || authorization[0] != "Bearer" {
 			return errors.
 				New().
-				Code(401).
+				Code(http.StatusUnauthorized).
 				Layer(errors.LayerRoute).
 				Msg(errors.MsgInvalidAuthtorization)
 		}
@@ -26,7 +29,7 @@ func Auth(next echo.HandlerFunc) echo.HandlerFunc {
 		if err := jwt.Decode(authorization[1], claims); err != nil {
 			return errors.
 				New().
-				Code(401).
+				Code(http.StatusUnauthorized).
 				Layer(errors.LayerRoute).
 				Msg(errors.MsgInvalidAuthtorization)
 		}

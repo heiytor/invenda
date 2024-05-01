@@ -5,7 +5,6 @@ import (
 
 	"github.com/heiytor/invenda/api/pkg/models"
 	"github.com/heiytor/invenda/api/pkg/requests"
-	"github.com/heiytor/invenda/api/route/pkg/middleware"
 	"github.com/labstack/echo/v4"
 )
 
@@ -23,6 +22,7 @@ func (rs *Routes) userGet() *route {
 	return &route{
 		method:      http.MethodGet,
 		path:        "/user/:id",
+		protected:   false,
 		middlewares: []echo.MiddlewareFunc{},
 		handler: func(c echo.Context) error {
 			ctx := c.Request().Context()
@@ -50,6 +50,7 @@ func (rs *Routes) userCreate() *route {
 	return &route{
 		method:      http.MethodPost,
 		path:        "/user",
+		protected:   false,
 		middlewares: []echo.MiddlewareFunc{},
 		handler: func(c echo.Context) error {
 			ctx := c.Request().Context()
@@ -78,7 +79,8 @@ func (rs *Routes) userUpdate() *route {
 	return &route{
 		method:      http.MethodPatch,
 		path:        "/user",
-		middlewares: []echo.MiddlewareFunc{middleware.Auth},
+		protected:   true,
+		middlewares: []echo.MiddlewareFunc{},
 		handler: func(c echo.Context) error {
 			ctx := c.Request().Context()
 			req := new(requests.UpdateUser)
@@ -106,7 +108,8 @@ func (rs *Routes) userDelete() *route {
 	return &route{
 		method:      http.MethodDelete,
 		path:        "/user",
-		middlewares: []echo.MiddlewareFunc{middleware.Auth},
+		protected:   true,
+		middlewares: []echo.MiddlewareFunc{},
 		handler: func(c echo.Context) error {
 			ctx := c.Request().Context()
 
@@ -137,13 +140,12 @@ func (rs *Routes) userAuth() *route {
 				return err
 			}
 
-			_, token, err := rs.service.AuthUser(ctx, req)
+			claims, token, err := rs.service.AuthUser(ctx, req)
 			if err != nil {
 				return err
 			}
 
-			// TODO: format this response
-			return c.JSON(http.StatusOK, token)
+			return c.JSON(http.StatusOK, map[string]interface{}{"token": token, "claims": claims})
 		},
 	}
 }

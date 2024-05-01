@@ -10,8 +10,6 @@ import (
 	"golang.org/x/crypto/argon2"
 )
 
-// TODO: benchmarks
-
 func TestNew(t *testing.T) {
 	cases := []struct {
 		description string

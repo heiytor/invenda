@@ -4,6 +4,8 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
+	"github.com/heiytor/invenda/api/pkg/auth"
 	"github.com/heiytor/invenda/api/pkg/clock"
 )
 
@@ -24,15 +26,19 @@ type UserChanges struct {
 }
 
 type UserClaims struct {
-	Email string `json:"email"`
+	Email       string            `json:"email"`
+	Namespace   string            `json:"namespace"`
+	Permissions []auth.Permission `json:"permissions"`
 	jwt.RegisteredClaims
 }
 
 func (u *UserClaims) SetRegisteredClaims() {
-	u.RegisteredClaims.ID = "TODO UUID"
+	u.RegisteredClaims.ID = uuid.New().String()
 	u.RegisteredClaims.Issuer = "TODO"
 	u.RegisteredClaims.Audience = jwt.ClaimStrings{"TODO"}
-	u.RegisteredClaims.IssuedAt = jwt.NewNumericDate(clock.Now())
-	u.RegisteredClaims.NotBefore = jwt.NewNumericDate(clock.Now())
-	u.RegisteredClaims.ExpiresAt = jwt.NewNumericDate(clock.Now().AddDate(0, 0, 7)) // TODO: maybe we can expires after 1 week?)
+
+	now := clock.Now()
+	u.RegisteredClaims.IssuedAt = jwt.NewNumericDate(now)
+	u.RegisteredClaims.NotBefore = jwt.NewNumericDate(now)
+	u.RegisteredClaims.ExpiresAt = jwt.NewNumericDate(now.AddDate(0, 0, 7))
 }

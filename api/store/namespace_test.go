@@ -5,7 +5,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/heiytor/invenda/api/pkg/auth"
 	"github.com/heiytor/invenda/api/pkg/models"
+	"github.com/heiytor/invenda/api/pkg/query"
 	"github.com/heiytor/invenda/api/store"
 	"github.com/stretchr/testify/require"
 	"go.mongodb.org/mongo-driver/bson"
@@ -49,7 +51,8 @@ func TestNamespaceGet(t *testing.T) {
 						{
 							ID:          "usr_01HNGJ2BTGQAHAZ1XNYZQPG719",
 							AddedAt:     time.Date(2023, 1, 1, 12, 0, 0, 0, time.UTC),
-							Permissions: []string{"namespace:write"},
+							Owner:       true,
+							Permissions: []auth.Permission{auth.NamespaceWrite},
 						},
 					},
 				},
@@ -71,6 +74,245 @@ func TestNamespaceGet(t *testing.T) {
 	}
 }
 
+func TestNamespaceGetFirst(t *testing.T) {
+	type Actual struct {
+		namespace *models.Namespace
+		err       error
+	}
+
+	cases := []struct {
+		description string
+		memberID    string
+		opts        []store.GetNamespaceOption
+		fixtures    []fixture
+		expected    Actual
+	}{
+		{
+			description: "fails when namespace is not found",
+			memberID:    "00000000000000000000000000",
+			opts:        []store.GetNamespaceOption{},
+			fixtures:    []fixture{},
+			expected: Actual{
+				namespace: nil,
+				err:       store.ErrNotFound,
+			},
+		},
+		{
+			description: "succeeds to find a namespace",
+			memberID:    "usr_01HNGJ2BTGQAHAZ1XNYZQPG719",
+			opts:        []store.GetNamespaceOption{},
+			fixtures:    []fixture{fixtureNamespace},
+			expected: Actual{
+				namespace: &models.Namespace{
+					ID:        "ns_01HV7FKH5SRB0TGWM7MQ15PYKN",
+					CreatedAt: time.Date(2023, 1, 1, 12, 0, 0, 0, time.UTC),
+					UpdatedAt: time.Date(2023, 1, 1, 12, 0, 0, 0, time.UTC),
+					Name:      "Atacarejo",
+					Members: []models.Member{
+						{
+							ID:          "usr_01HNGJ2BTGQAHAZ1XNYZQPG719",
+							AddedAt:     time.Date(2023, 1, 1, 12, 0, 0, 0, time.UTC),
+							Owner:       true,
+							Permissions: []auth.Permission{auth.NamespaceWrite},
+						},
+					},
+				},
+				err: nil,
+			},
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.description, func(t *testing.T) {
+			srv.apply(tc.fixtures...)
+			defer srv.reset()
+
+			ctx := context.Background()
+
+			namespace, err := s.Namespace.GetFirst(ctx, tc.memberID, tc.opts...)
+			require.Equal(t, tc.expected, Actual{namespace, err})
+		})
+	}
+}
+
+func TestNamespaceGetMany(t *testing.T) {
+	type Actual struct {
+		namespace []models.Namespace
+		count     int64
+		err       error
+	}
+
+	cases := []struct {
+		description string
+		userID      string
+		query       *query.Query
+		opts        []store.GetNamespaceOption
+		fixtures    []fixture
+		expected    Actual
+	}{
+		{
+			description: "succeeds when namespace is not found",
+			userID:      "usr_00000000000000000000000000",
+			query:       &query.Query{Sorter: &query.Sorter{By: "created_at", Order: query.OrderAsc}},
+			opts:        []store.GetNamespaceOption{},
+			fixtures:    []fixture{},
+			expected: Actual{
+				namespace: []models.Namespace{},
+				count:     0,
+				err:       nil,
+			},
+		},
+		{
+			description: "succeeds to list the namespaces with order asc",
+			userID:      "usr_01HNGJ2BTGQAHAZ1XNYZQPG719",
+			query:       &query.Query{Sorter: &query.Sorter{By: "created_at", Order: query.OrderAsc}},
+			opts:        []store.GetNamespaceOption{},
+			fixtures:    []fixture{fixtureNamespace},
+			expected: Actual{
+				namespace: []models.Namespace{
+					{
+						ID:        "ns_01HV7FKH5SRB0TGWM7MQ15PYKN",
+						CreatedAt: time.Date(2023, 1, 1, 12, 0, 0, 0, time.UTC),
+						UpdatedAt: time.Date(2023, 1, 1, 12, 0, 0, 0, time.UTC),
+						Name:      "Atacarejo",
+						Members: []models.Member{
+							{
+								ID:          "usr_01HNGJ2BTGQAHAZ1XNYZQPG719",
+								AddedAt:     time.Date(2023, 1, 1, 12, 0, 0, 0, time.UTC),
+								Owner:       true,
+								Permissions: []auth.Permission{auth.NamespaceWrite},
+							},
+						},
+					},
+					{
+						ID:        "ns_01HWS7Q0H1JCEMKZADAFMETRZJ",
+						CreatedAt: time.Date(2023, 1, 2, 12, 0, 0, 0, time.UTC),
+						UpdatedAt: time.Date(2023, 1, 2, 12, 0, 0, 0, time.UTC),
+						Name:      "Kanela",
+						Members: []models.Member{
+							{
+								ID:          "usr_01HNGJ2BTGQAHAZ1XNYZQPG719",
+								AddedAt:     time.Date(2023, 1, 2, 12, 0, 0, 0, time.UTC),
+								Owner:       true,
+								Permissions: []auth.Permission{auth.NamespaceWrite},
+							},
+						},
+					},
+				},
+				count: 2,
+				err:   nil,
+			},
+		},
+		{
+			description: "succeeds to list the namespaces with order desc",
+			userID:      "usr_01HNGJ2BTGQAHAZ1XNYZQPG719",
+			query:       &query.Query{Sorter: &query.Sorter{By: "created_at", Order: query.OrderDesc}},
+			opts:        []store.GetNamespaceOption{},
+			fixtures:    []fixture{fixtureNamespace},
+			expected: Actual{
+				namespace: []models.Namespace{
+					{
+						ID:        "ns_01HWS7Q0H1JCEMKZADAFMETRZJ",
+						CreatedAt: time.Date(2023, 1, 2, 12, 0, 0, 0, time.UTC),
+						UpdatedAt: time.Date(2023, 1, 2, 12, 0, 0, 0, time.UTC),
+						Name:      "Kanela",
+						Members: []models.Member{
+							{
+								ID:          "usr_01HNGJ2BTGQAHAZ1XNYZQPG719",
+								AddedAt:     time.Date(2023, 1, 2, 12, 0, 0, 0, time.UTC),
+								Owner:       true,
+								Permissions: []auth.Permission{auth.NamespaceWrite},
+							},
+						},
+					},
+					{
+						ID:        "ns_01HV7FKH5SRB0TGWM7MQ15PYKN",
+						CreatedAt: time.Date(2023, 1, 1, 12, 0, 0, 0, time.UTC),
+						UpdatedAt: time.Date(2023, 1, 1, 12, 0, 0, 0, time.UTC),
+						Name:      "Atacarejo",
+						Members: []models.Member{
+							{
+								ID:          "usr_01HNGJ2BTGQAHAZ1XNYZQPG719",
+								AddedAt:     time.Date(2023, 1, 1, 12, 0, 0, 0, time.UTC),
+								Owner:       true,
+								Permissions: []auth.Permission{auth.NamespaceWrite},
+							},
+						},
+					},
+				},
+				count: 2,
+				err:   nil,
+			},
+		},
+		{
+			description: "succeeds to list the namespaces with pagination",
+			userID:      "usr_01HNGJ2BTGQAHAZ1XNYZQPG719",
+			query:       &query.Query{Paginator: &query.Paginator{Page: 1, Size: 1}, Sorter: &query.Sorter{By: "created_at", Order: query.OrderAsc}},
+			opts:        []store.GetNamespaceOption{},
+			fixtures:    []fixture{fixtureNamespace},
+			expected: Actual{
+				namespace: []models.Namespace{
+					{
+						ID:        "ns_01HV7FKH5SRB0TGWM7MQ15PYKN",
+						CreatedAt: time.Date(2023, 1, 1, 12, 0, 0, 0, time.UTC),
+						UpdatedAt: time.Date(2023, 1, 1, 12, 0, 0, 0, time.UTC),
+						Name:      "Atacarejo",
+						Members: []models.Member{
+							{
+								ID:          "usr_01HNGJ2BTGQAHAZ1XNYZQPG719",
+								AddedAt:     time.Date(2023, 1, 1, 12, 0, 0, 0, time.UTC),
+								Owner:       true,
+								Permissions: []auth.Permission{auth.NamespaceWrite},
+							},
+						},
+					},
+				},
+				count: 2,
+				err:   nil,
+			},
+		},
+		{
+			description: "succeeds to list the namespaces",
+			userID:      "usr_01HNGJ2BTGQAHAZ1XNYZQPG719",
+			query:       &query.Query{Paginator: &query.Paginator{Page: 2, Size: 1}, Sorter: &query.Sorter{By: "created_at", Order: query.OrderAsc}},
+			opts:        []store.GetNamespaceOption{},
+			fixtures:    []fixture{fixtureNamespace},
+			expected: Actual{
+				namespace: []models.Namespace{
+					{
+						ID:        "ns_01HWS7Q0H1JCEMKZADAFMETRZJ",
+						CreatedAt: time.Date(2023, 1, 2, 12, 0, 0, 0, time.UTC),
+						UpdatedAt: time.Date(2023, 1, 2, 12, 0, 0, 0, time.UTC),
+						Name:      "Kanela",
+						Members: []models.Member{
+							{
+								ID:          "usr_01HNGJ2BTGQAHAZ1XNYZQPG719",
+								AddedAt:     time.Date(2023, 1, 2, 12, 0, 0, 0, time.UTC),
+								Owner:       true,
+								Permissions: []auth.Permission{auth.NamespaceWrite},
+							},
+						},
+					},
+				},
+				count: 2,
+				err:   nil,
+			},
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.description, func(t *testing.T) {
+			srv.apply(tc.fixtures...)
+			defer srv.reset()
+
+			ctx := context.Background()
+
+			namespaces, count, err := s.Namespace.GetMany(ctx, tc.userID, tc.query, tc.opts...)
+			require.Equal(t, tc.expected, Actual{namespaces, count, err})
+		})
+	}
+}
+
 func TestNamespaceCreate(t *testing.T) {
 	type Actual struct {
 		err error
@@ -88,7 +330,7 @@ func TestNamespaceCreate(t *testing.T) {
 				Members: []models.Member{
 					{
 						ID:          "01HNGJ2BTGQAHAZ1XNYZQPG719",
-						Permissions: []string{"namespace:write"},
+						Permissions: []auth.Permission{auth.NamespaceWrite},
 					},
 				},
 			},
@@ -215,7 +457,6 @@ func TestNamespaceUpsertMember(t *testing.T) {
 		description string
 		id          string
 		member      *models.Member
-		exists      bool
 		fixtures    []fixture
 		expected    Actual
 	}{
@@ -224,9 +465,8 @@ func TestNamespaceUpsertMember(t *testing.T) {
 			id:          "ns_00000000000000000000000000",
 			member: &models.Member{
 				ID:          "usr_01HVD0VWF0G6Z7TMCP1CPST4FN",
-				Permissions: []string{"namespace:read", "namepace:write"},
+				Permissions: []auth.Permission{auth.NamespaceRead, auth.NamespaceWrite},
 			},
-			exists:   false,
 			fixtures: []fixture{},
 			expected: Actual{err: store.ErrNotFound},
 		},
@@ -235,21 +475,21 @@ func TestNamespaceUpsertMember(t *testing.T) {
 			id:          "ns_01HV7FKH5SRB0TGWM7MQ15PYKN",
 			member: &models.Member{
 				ID:          "usr_01HVD0VWF0G6Z7TMCP1CPST4FN",
-				Permissions: []string{"namespace:read", "namepace:write"},
+				Owner:       false,
+				Permissions: []auth.Permission{auth.NamespaceRead, auth.NamespaceWrite},
 			},
-			exists:   false,
 			fixtures: []fixture{fixtureNamespace},
 			expected: Actual{err: nil},
 		},
 		{
-			description: "succeeds to add a member",
+			description: "succeeds to upsert a member",
 			id:          "ns_01HV7FKH5SRB0TGWM7MQ15PYKN",
 			member: &models.Member{
 				ID:          "usr_01HNGJ2BTGQAHAZ1XNYZQPG719",
 				AddedAt:     time.Date(2023, 1, 1, 12, 0, 0, 0, time.UTC),
-				Permissions: []string{"namespace:read", "namepace:write"},
+				Owner:       true,
+				Permissions: []auth.Permission{auth.NamespaceRead, auth.NamespaceWrite},
 			},
-			exists:   true,
 			fixtures: []fixture{fixtureNamespace},
 			expected: Actual{err: nil},
 		},
@@ -262,7 +502,7 @@ func TestNamespaceUpsertMember(t *testing.T) {
 
 			ctx := context.Background()
 
-			if err := s.Namespace.UpsertMember(ctx, tc.id, tc.member, tc.exists); err != nil {
+			if err := s.Namespace.UpsertMember(ctx, tc.id, tc.member); err != nil {
 				require.Equal(t, tc.expected, Actual{err})
 				return
 			}
@@ -270,9 +510,9 @@ func TestNamespaceUpsertMember(t *testing.T) {
 			namespace := new(models.Namespace)
 			require.NoError(t, db.Collection("namespace").FindOne(ctx, bson.M{"_id": tc.id}).Decode(namespace))
 
-			for _, m := range namespace.Members {
+			for i, m := range namespace.Members {
 				if m.ID == tc.member.ID {
-					require.Equal(t, tc.member.Permissions, namespace.Members[1].Permissions)
+					require.Equal(t, tc.member.Permissions, namespace.Members[i].Permissions)
 				}
 			}
 		})

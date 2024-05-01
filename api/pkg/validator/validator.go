@@ -2,10 +2,12 @@ package validator
 
 import (
 	"net/http"
+	"slices"
 	"strings"
 	"unicode"
 
 	"github.com/gookit/validate"
+	"github.com/heiytor/invenda/api/pkg/auth"
 	"github.com/heiytor/invenda/api/pkg/errors"
 	"github.com/oklog/ulid/v2"
 )
@@ -19,9 +21,12 @@ func New() *Validator {
 
 	validate.AddValidator("password", IsPassword)
 	validate.AddValidator("ulid", IsULID)
+	validate.AddValidator("permissions", IsPermissions)
 
 	validate.AddGlobalMessages(map[string]string{
-		"password": "{field} must be between 8 and 64 characters long, and contain at least one number, one uppercase letter, one lowercase letter, and one special character",
+		"password":    "{field} must be between 8 and 64 characters long, and contain at least one number, one uppercase letter, one lowercase letter, and one special character.",
+		"ulid":        "{field} must be a valid ULID.",
+		"permissions": "{field} must be a valid permission",
 	})
 
 	return &Validator{}
@@ -77,12 +82,23 @@ func IsPassword(input string) bool {
 func IsULID(input string) bool {
 	parts := strings.Split(input, "_")
 
-	if len(parts) != 2  {
+	if len(parts) != 2 {
 		return false
 	}
 
 	if _, err := ulid.Parse(parts[1]); err != nil {
 		return false
+	}
+
+	return true
+}
+
+func IsPermissions(inputs []auth.Permission) bool {
+	all := auth.All()
+	for _, input := range inputs {
+		if !slices.Contains(all, input) {
+			return false
+		}
 	}
 
 	return true
