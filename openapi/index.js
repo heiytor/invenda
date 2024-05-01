@@ -14,4 +14,4 @@ app.use((ctx, next) => {
   return next();
 });
 
-app.listen(3334, () => console.info("OpenAPI server started."));
+app.listen(8080, () => console.info("OpenAPI server started."));

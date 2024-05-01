@@ -14,15 +14,13 @@ services:
       target: ${INVENDA_ENVIRONMENT}
     volumes:
       - ./api:/go/src/github.com/heiytor/invenda/api
-    ports: # TODO: remove when nginx is up
-      - 3333:3333
     depends_on:
       - mongo
       - redis
     networks:
       - invenda
     healthcheck:
-      test: "curl -f http://api:3333/healthcheck || exit 1"
+      test: "curl -f http://api:8080/healthcheck || exit 1"
       interval: 30s
       start_period: 10s
 
@@ -57,12 +55,34 @@ services:
       - ./openapi:/openapi
     networks:
       - invenda
-    ports: # TODO: remove when nginx is up
-      - 3334:3334
     healthcheck:
-      test: "curl -f http://openapi:3334/healthcheck || exit 1"
+      test: "curl -f http://openapi:8080/healthcheck || exit 1"
       interval: 30s
       start_period: 10s
+
+  gateway:
+    image: invenda/gateway:${INVENDA_VERSION}
+    restart: unless-stopped
+    build:
+      context: gateway
+      dockerfile: Dockerfile
+      target: ${INVENDA_ENVIRONMENT}
+    environment:
+      - INVENDA_VERSION=${INVENDA_VERSION}
+      - INVENDA_ENVIRONMENT=${INVENDA_ENVIRONMENT}
+    depends_on:
+      - api
+      - openapi
+    ports:
+      - ${INVENDA_BIND_ADDRESS}:${INVENDA_HTTP_PORT}:80
+    volumes:
+      - ./gateway/nginx.conf:/etc/nginx/nginx.conf
+    networks:
+      - invenda
+    # healthcheck:
+    #   test: "curl -f http://gateway:8080/healthcheck || exit 1"
+    #   interval: 30s
+    #   start_period: 10s
 
 networks:
   invenda:

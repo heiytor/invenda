@@ -48,14 +48,14 @@ func main() {
 			Msg("Unable to connect to MongoDB")
 	}
 
+	log.Info().Msg("Connected to MongoDB")
+
 	store, err := store.New(ctx, client, preferredDb)
 	if err != nil {
 		log.Panic().
 			Err(err).
 			Msg("Unable to create the store")
 	}
-
-	log.Info().Msg("Connected to MongoDB")
 
 	service := service.New(store)
 	routes := route.New(service)
@@ -65,7 +65,7 @@ func main() {
 	routes.E.Logger = logger
 	routes.E.Use(middleware.Logger(logger))
 
-	if err := routes.E.Start(":3333"); err != nil {
+	if err := routes.E.Start(":8080"); err != nil {
 		log.Panic().
 			Err(err).
 			Msg("Echo panicked.")

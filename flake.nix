@@ -32,12 +32,15 @@
             gopls
             node2nix
             nodejs
+            python312
+            python312Packages.pip
           ];
 
           shellHook = ''
             echo "Entering Invneda development environment."
             echo "`go version`"
             echo "node version `node --version`"
+            echo "python version `python --version`"
             exec zsh
           '';
         };
