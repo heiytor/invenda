@@ -23,6 +23,7 @@ func (rs *Routes) userGet() *route {
 		method:      http.MethodGet,
 		path:        "/user/:id",
 		protected:   false,
+		group:       GroupPublic,
 		middlewares: []echo.MiddlewareFunc{},
 		handler: func(c echo.Context) error {
 			ctx := c.Request().Context()
@@ -51,6 +52,7 @@ func (rs *Routes) userCreate() *route {
 		method:      http.MethodPost,
 		path:        "/user",
 		protected:   false,
+		group:       GroupPublic,
 		middlewares: []echo.MiddlewareFunc{},
 		handler: func(c echo.Context) error {
 			ctx := c.Request().Context()
@@ -80,6 +82,7 @@ func (rs *Routes) userUpdate() *route {
 		method:      http.MethodPatch,
 		path:        "/user",
 		protected:   true,
+		group:       GroupPublic,
 		middlewares: []echo.MiddlewareFunc{},
 		handler: func(c echo.Context) error {
 			ctx := c.Request().Context()
@@ -109,6 +112,7 @@ func (rs *Routes) userDelete() *route {
 		method:      http.MethodDelete,
 		path:        "/user",
 		protected:   true,
+		group:       GroupPublic,
 		middlewares: []echo.MiddlewareFunc{},
 		handler: func(c echo.Context) error {
 			ctx := c.Request().Context()
@@ -127,6 +131,8 @@ func (rs *Routes) userAuth() *route {
 	return &route{
 		method:      http.MethodPost,
 		path:        "/user/auth",
+		protected:   false,
+		group:       GroupPublic,
 		middlewares: []echo.MiddlewareFunc{},
 		handler: func(c echo.Context) error {
 			ctx := c.Request().Context()

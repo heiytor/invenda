@@ -12,10 +12,18 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+type Group string
+
+const (
+	GroupPublic   Group = "public"
+	GroupInternal Group = "internal"
+)
+
 type route struct {
 	method      string
 	path        string
 	protected   bool
+	group       Group
 	middlewares []echo.MiddlewareFunc
 	handler     echo.HandlerFunc
 }
@@ -49,16 +57,26 @@ func (rs *Routes) bindRoutes() {
 	routes = append(routes, rs.userRoutes()...)
 	routes = append(routes, rs.namespaceRoutes()...)
 
+	pub := rs.E.Group(string(GroupPublic))
+	pri := rs.E.Group(string(GroupInternal))
+
 	for _, r := range routes {
 		log.Info().
 			Str("method", r.method).
 			Str("path", r.path).
+			Bool("protected", r.protected).
+			Str("group", string(r.group)).
 			Msg("Registering route")
 
 		if r.protected {
 			r.middlewares = append([]echo.MiddlewareFunc{middleware.Auth}, r.middlewares...)
 		}
 
-		rs.E.Add(r.method, r.path, r.handler, r.middlewares...)
+		switch r.group {
+		case GroupPublic:
+			pub.Add(r.method, r.path, r.handler, r.middlewares...)
+		case GroupInternal:
+			pri.Add(r.method, r.path, r.handler, r.middlewares...)
+		}
 	}
 }

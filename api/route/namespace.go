@@ -26,6 +26,7 @@ func (rs *Routes) namespaceList() *route {
 		method:      http.MethodGet,
 		path:        "/namespaces",
 		protected:   true,
+		group:       GroupPublic,
 		middlewares: []echo.MiddlewareFunc{},
 		handler: func(c echo.Context) error {
 			claims := utils.UserClaims(c)
@@ -60,6 +61,7 @@ func (rs *Routes) namespaceGet() *route {
 		method:      http.MethodGet,
 		path:        "/namespace",
 		protected:   true,
+		group:       GroupPublic,
 		middlewares: []echo.MiddlewareFunc{},
 		handler: func(c echo.Context) error {
 			claims := utils.UserClaims(c)
@@ -89,6 +91,7 @@ func (rs *Routes) namespaceCreate() *route {
 		method:      http.MethodPost,
 		path:        "/namespace",
 		protected:   true,
+		group:       GroupPublic,
 		middlewares: []echo.MiddlewareFunc{},
 		handler: func(c echo.Context) error {
 			ctx := c.Request().Context()
@@ -118,6 +121,7 @@ func (rs *Routes) namespaceUpdate() *route {
 		method:      http.MethodPatch,
 		path:        "/namespace",
 		protected:   true,
+		group:       GroupPublic,
 		middlewares: []echo.MiddlewareFunc{},
 		handler: func(c echo.Context) error {
 			claims := utils.UserClaims(c)
@@ -155,6 +159,7 @@ func (rs *Routes) namespaceDelete() *route {
 		method:      http.MethodDelete,
 		path:        "/namespace",
 		protected:   true,
+		group:       GroupPublic,
 		middlewares: []echo.MiddlewareFunc{},
 		handler: func(c echo.Context) error {
 			claims := utils.UserClaims(c)
