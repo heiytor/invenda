@@ -56,6 +56,9 @@ func TestMain(m *testing.M) {
 		PreInsertFuncs: []mongotest.PreInsertFunc{
 			mongotest.SimpleConvertTime("user", "created_at"),
 			mongotest.SimpleConvertTime("user", "updated_at"),
+			mongotest.SimpleConvertTime("namespace", "created_at"),
+			mongotest.SimpleConvertTime("namespace", "updated_at"),
+			mongotest.SimpleConvertTime("namespace.members.id", "updated_at"),
 		},
 	})
 
@@ -79,7 +82,8 @@ func TestMain(m *testing.M) {
 type fixture string
 
 const (
-	fixtureUser fixture = "user"
+	fixtureUser      fixture = "user"
+	fixtureNamespace fixture = "namespace"
 )
 
 func (*Server) apply(fixtures ...fixture) error {

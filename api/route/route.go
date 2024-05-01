@@ -11,9 +11,10 @@ import (
 
 // route é a definição de uma rota, e é retornado por todos os métodos de rota do Routes.
 type route struct {
-	method  string           // method é o método HTTP usado pela rota.
-	path    string           // path é o caminho a qual a rota deve ser "bindada".
-	handler echo.HandlerFunc // handler é o callback a ser executado.
+	method      string // method é o método HTTP usado pela rota.
+	path        string // path é o caminho a qual a rota deve ser "bindada".
+	middlewares []echo.MiddlewareFunc
+	handler     echo.HandlerFunc // handler é o callback a ser executado.
 }
 
 // Routes "guarda" todas as rotas da aplicação.
@@ -37,9 +38,12 @@ func New(service service.Service) *Routes {
 }
 
 func (rs *Routes) bindRoutes() {
-	routes := []*route{}
+	// healthcheck is used by docker to check if the container is healthy
+	rs.E.GET("/healthcheck", func(c echo.Context) error {
+		return c.NoContent(200)
+	})
 
-	routes = append(routes, rs.healthcheck())
+	routes := []*route{}
 	routes = append(routes, rs.userRoutes()...)
 
 	for _, r := range routes {
@@ -48,6 +52,6 @@ func (rs *Routes) bindRoutes() {
 			Str("path", r.path).
 			Msg("Registering route")
 
-		rs.E.Add(r.method, r.path, r.handler)
+		rs.E.Add(r.method, r.path, r.handler, r.middlewares...)
 	}
 }

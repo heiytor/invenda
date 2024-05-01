@@ -1,5 +1,9 @@
 package requests
 
+type GetUser struct {
+	ID string `param:"id" validate:"required|ulid"`
+}
+
 type CreateUser struct {
 	Name     string `json:"name" validate:"required"`
 	Email    string `json:"email" validate:"required|email"`

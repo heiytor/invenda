@@ -262,7 +262,7 @@ func TestUserUpdate(t *testing.T) {
 			expected:    Actual{err: store.ErrNotFound},
 		},
 		{
-			description: "succeeds to find a user",
+			description: "succeeds to update a user",
 			id:          "01HNGJ2BTGQAHAZ1XNYZQPG719",
 			changes:     &models.UserChanges{Email: "new.email@test.com"},
 			fixtures:    []fixture{fixtureUser},
@@ -289,6 +289,49 @@ func TestUserUpdate(t *testing.T) {
 			require.Equal(t, tc.changes.Email, user.Email)                                    // Checks if the email was updated
 			require.WithinDuration(t, tc.changes.UpdatedAt, user.UpdatedAt, time.Millisecond) // Checks if the updated_at was updated
 			require.Equal(t, "John Doe", user.Name)                                           // Checks if the password follows unalterated
+		})
+	}
+}
+
+func TestUserDelete(t *testing.T) {
+	type Actual struct {
+		err error
+	}
+
+	cases := []struct {
+		description string
+		id          string
+		fixtures    []fixture
+		expected    Actual
+	}{
+		{
+			description: "fails when user is not found",
+			id:          "00000000000000000000000000",
+			fixtures:    []fixture{},
+			expected:    Actual{err: store.ErrNotFound},
+		},
+		{
+			description: "succeeds to delete a user",
+			id:          "01HNGJ2BTGQAHAZ1XNYZQPG719",
+			fixtures:    []fixture{fixtureUser},
+			expected:    Actual{err: nil},
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.description, func(t *testing.T) {
+			srv.apply(tc.fixtures...)
+			defer srv.reset()
+
+			ctx := context.Background()
+
+			if err := s.User.Delete(ctx, tc.id); err != nil {
+				require.Equal(t, tc.expected, Actual{err})
+				return
+			}
+
+			user := new(models.User)
+			require.Error(t, db.Collection("user").FindOne(ctx, bson.M{"_id": tc.id}).Decode(user))
 		})
 	}
 }

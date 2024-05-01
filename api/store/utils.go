@@ -7,6 +7,11 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
+type Entity interface {
+	// Entity returns the related entity on which the methods operate.
+	Entity() string
+}
+
 // or creates a `{ "$match": { "$or": [...] } }` aggregation pipeline. The $match stage
 // filters documents to include only those that match any non-zero field of the target object.
 func or[T any](target *T) []bson.M {

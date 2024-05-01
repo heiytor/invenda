@@ -12,7 +12,7 @@ var (
 	ErrNotFound   = errors.New("document not found")
 )
 
-func fromMongoError(err error) error {
+func mapError(err error) error {
 	switch {
 	case err == mongo.ErrNoDocuments, err == io.EOF:
 		return ErrNotFound

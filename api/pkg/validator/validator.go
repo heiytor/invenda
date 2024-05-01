@@ -2,10 +2,12 @@ package validator
 
 import (
 	"net/http"
+	"strings"
 	"unicode"
 
 	"github.com/gookit/validate"
 	"github.com/heiytor/invenda/api/pkg/errors"
+	"github.com/oklog/ulid/v2"
 )
 
 type Validator struct{}
@@ -16,6 +18,7 @@ func New() *Validator {
 	})
 
 	validate.AddValidator("password", IsPassword)
+	validate.AddValidator("ulid", IsULID)
 
 	validate.AddGlobalMessages(map[string]string{
 		"password": "{field} must be between 8 and 64 characters long, and contain at least one number, one uppercase letter, one lowercase letter, and one special character",
@@ -44,16 +47,16 @@ func (*Validator) Validate(s interface{}) error {
 	return err.Layer(errors.LayerPkg).Msg("bad request")
 }
 
-// IsPassword reports wheter a pwd is a valid password.
+// IsPassword reports wheter a input is a valid password.
 // A valid password must be between 8 and 64 characters long, and contain at least one number,
 // one uppercase letter, one lowercase letter, and one special character",
-func IsPassword(pwd string) bool {
+func IsPassword(input string) bool {
 	// golang's regexp does not supports backtracking, which means that is impossible
 	// to make a regex to matches with these rules.
 	var number, upper, lower, special bool
 	var letters int
 
-	for _, c := range pwd {
+	for _, c := range input {
 		switch {
 		case unicode.IsNumber(c):
 			number = true
@@ -69,4 +72,18 @@ func IsPassword(pwd string) bool {
 	}
 
 	return (letters >= 8 && letters <= 64) && (number && upper && lower && special)
+}
+
+func IsULID(input string) bool {
+	parts := strings.Split(input, "_")
+
+	if len(parts) != 2  {
+		return false
+	}
+
+	if _, err := ulid.Parse(parts[1]); err != nil {
+		return false
+	}
+
+	return true
 }

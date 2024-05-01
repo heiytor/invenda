@@ -20,6 +20,8 @@ func RemoveUserPassword(u *models.User) error {
 }
 
 type User interface {
+	Entity
+
 	// Create creates a new user with the provided data. It returns the inserted ID or an error
 	// if any.
 	Create(ctx context.Context, user *models.User) (insertedID string, err error)
@@ -36,6 +38,9 @@ type User interface {
 
 	// TODO
 	Update(ctx context.Context, id string, changes *models.UserChanges) (err error)
+
+	// Delete deletes a user with the specified ID. It returns [ErrNotFound] if no user is found.
+	Delete(ctx context.Context, id string) (err error)
 }
 
 type user struct {
@@ -44,13 +49,17 @@ type user struct {
 
 var _ User = (*user)(nil)
 
+func (*user) Entity() string {
+	return "user"
+}
+
 func (u *user) Create(ctx context.Context, usr *models.User) (string, error) {
 	usr.ID = "usr_" + ulid.Make().String()
 	usr.CreatedAt = clock.Now()
 	usr.UpdatedAt = clock.Now()
 
 	if _, err := u.c.InsertOne(ctx, usr); err != nil {
-		return "", fromMongoError(err)
+		return "", mapError(err)
 	}
 
 	return usr.ID, nil
@@ -59,7 +68,7 @@ func (u *user) Create(ctx context.Context, usr *models.User) (string, error) {
 func (u *user) GetByID(ctx context.Context, id string, opts ...GetUserOption) (*models.User, error) {
 	usr := new(models.User)
 	if err := u.c.FindOne(ctx, bson.M{"_id": id}).Decode(usr); err != nil {
-		return nil, fromMongoError(err)
+		return nil, mapError(err)
 	}
 
 	for _, opt := range opts {
@@ -74,7 +83,7 @@ func (u *user) GetByID(ctx context.Context, id string, opts ...GetUserOption) (*
 func (u *user) GetByEmail(ctx context.Context, email string, opts ...GetUserOption) (*models.User, error) {
 	usr := new(models.User)
 	if err := u.c.FindOne(ctx, bson.M{"email": email}).Decode(usr); err != nil {
-		return nil, fromMongoError(err)
+		return nil, mapError(err)
 	}
 
 	for _, opt := range opts {
@@ -89,7 +98,7 @@ func (u *user) GetByEmail(ctx context.Context, email string, opts ...GetUserOpti
 func (u *user) Conflicts(ctx context.Context, target *models.User) ([]string, error) {
 	cursor, err := u.c.Aggregate(ctx, or(target))
 	if err != nil {
-		return nil, fromMongoError(err)
+		return nil, mapError(err)
 	}
 	defer cursor.Close(ctx)
 
@@ -98,7 +107,7 @@ func (u *user) Conflicts(ctx context.Context, target *models.User) ([]string, er
 		usr := new(models.User)
 
 		if err = cursor.Decode(usr); err != nil {
-			return nil, fromMongoError(err)
+			return nil, mapError(err)
 		}
 
 		conflicts = append(conflicts, partialEqual(target, usr)...)
@@ -112,14 +121,27 @@ func (u *user) Update(ctx context.Context, id string, changes *models.UserChange
 		return nil
 	}
 
-	changes.UpdatedAt = clock.Now().UTC()
+	changes.UpdatedAt = clock.Now()
 
 	res, err := u.c.UpdateOne(ctx, bson.M{"_id": id}, bson.M{"$set": changes})
 	if err != nil {
-		return fromMongoError(err)
+		return mapError(err)
 	}
 
 	if res.MatchedCount < 1 {
+		return ErrNotFound
+	}
+
+	return nil
+}
+
+func (u *user) Delete(ctx context.Context, id string) error {
+	res, err := u.c.DeleteOne(ctx, bson.M{"_id": id})
+	if err != nil {
+		return mapError(err)
+	}
+
+	if res.DeletedCount < 1 {
 		return ErrNotFound
 	}
 

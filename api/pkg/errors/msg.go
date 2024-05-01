@@ -1,5 +1,8 @@
 package errors
 
 const (
-	MsgConflict = "conflicts found"
+	MsgUnexpected            = "unexpected error"
+	MsgConflict              = "conflicts found"
+	MsgNotFound              = "entity not found"
+	MsgInvalidAuthtorization = "missing or invalid Authorization header"
 )

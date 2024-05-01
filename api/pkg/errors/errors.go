@@ -5,6 +5,10 @@ import (
 	"fmt"
 )
 
+func Is(err error, target error) bool {
+	return goerrors.Is(err, target)
+}
+
 type Error struct {
 	Msg   string                 `json:"error"`
 	Layer Layer                  `json:"layer"`

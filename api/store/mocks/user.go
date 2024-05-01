@@ -74,32 +74,22 @@ func (_m *User) Create(ctx context.Context, user *models.User) (string, error) {
 	return r0, r1
 }
 
-// CreateRefreshToken provides a mock function with given fields: ctx, token
-func (_m *User) CreateRefreshToken(ctx context.Context, token *models.AccessToken) (string, error) {
-	ret := _m.Called(ctx, token)
+// Delete provides a mock function with given fields: ctx, id
+func (_m *User) Delete(ctx context.Context, id string) error {
+	ret := _m.Called(ctx, id)
 
 	if len(ret) == 0 {
-		panic("no return value specified for CreateRefreshToken")
+		panic("no return value specified for Delete")
 	}
 
-	var r0 string
-	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, *models.AccessToken) (string, error)); ok {
-		return rf(ctx, token)
-	}
-	if rf, ok := ret.Get(0).(func(context.Context, *models.AccessToken) string); ok {
-		r0 = rf(ctx, token)
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, string) error); ok {
+		r0 = rf(ctx, id)
 	} else {
-		r0 = ret.Get(0).(string)
+		r0 = ret.Error(0)
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, *models.AccessToken) error); ok {
-		r1 = rf(ctx, token)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
+	return r0
 }
 
 // GetByEmail provides a mock function with given fields: ctx, email, opts

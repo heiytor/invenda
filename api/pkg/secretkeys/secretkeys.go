@@ -11,8 +11,8 @@ import (
 )
 
 const (
-	KingPrivateKey = "PRIVATE KEY"
-	KingPublicKey  = "PUBLIC KEY"
+	KindPrivateKey = "PRIVATE KEY"
+	KindPublicKey  = "PUBLIC KEY"
 )
 
 var (
@@ -28,12 +28,12 @@ func Load() error {
 
 	var err error
 
-	PrivateKey, err = parse[ed25519.PrivateKey](dir+"/api-private.pem", KingPrivateKey)
+	PrivateKey, err = parse[ed25519.PrivateKey](dir+"/api-private.pem", KindPrivateKey)
 	if err != nil {
 		return err
 	}
 
-	PublicKey, err = parse[ed25519.PublicKey](dir+"/api-public.pem", KingPublicKey)
+	PublicKey, err = parse[ed25519.PublicKey](dir+"/api-public.pem", KindPublicKey)
 	return err
 }
 
@@ -56,13 +56,13 @@ func parse[T any](file, kind string) (T, error) {
 	}
 
 	switch kind {
-	case KingPrivateKey:
+	case KindPrivateKey:
 		key, err := x509.ParsePKCS8PrivateKey(block.Bytes)
 		if err != nil {
 			return tmp, err
 		}
 		return key.(T), nil
-	case KingPublicKey:
+	case KindPublicKey:
 		key, err := x509.ParsePKIXPublicKey(block.Bytes)
 		if err != nil {
 			return tmp, err
