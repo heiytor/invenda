@@ -1,6 +1,47 @@
 version: "3"
 
 services:
+  mongo:
+    image: mongo:7.0.5
+    restart: unless-stopped
+    # command: ["--replSet", "rs", "--bind_ip_all"]
+    networks:
+      - invenda
+    # healthcheck:
+    #   test: 'test $$(echo "rs.initiate({ _id: ''rs'', members: [ { _id: 0, host: ''mongo:27017'' } ] }).ok || rs.status().ok" | mongo --quiet) -eq 1'
+    #   interval: 30s
+    #   start_period: 10s
+
+  redis:
+    image: redis
+    restart: unless-stopped
+    networks:
+      - invenda
+
+  gateway:
+    image: invenda/gateway:${INVENDA_VERSION}
+    restart: unless-stopped
+    build:
+      context: .
+      dockerfile: gateway/Dockerfile
+      target: ${INVENDA_ENVIRONMENT}
+    environment:
+      - INVENDA_VERSION=${INVENDA_VERSION}
+      - INVENDA_ENVIRONMENT=${INVENDA_ENVIRONMENT}
+    depends_on:
+      - api
+      - openapi
+    ports:
+      - ${INVENDA_BIND_ADDRESS}:${INVENDA_HTTP_PORT}:80
+    volumes:
+      - ./gateway/nginx.conf:/etc/nginx/spec.conf
+    networks:
+      - invenda
+    healthcheck:
+      test: "curl -f http://gateway:80/healthcheck || exit 1"
+      interval: 30s
+      start_period: 10s
+
   api: 
     image: invenda/api:${INVENDA_VERSION}
     restart: unless-stopped
@@ -24,23 +65,6 @@ services:
       interval: 30s
       start_period: 10s
 
-  mongo:
-    image: mongo:7.0.5
-    restart: unless-stopped
-    # command: ["--replSet", "rs", "--bind_ip_all"]
-    networks:
-      - invenda
-    # healthcheck:
-    #   test: 'test $$(echo "rs.initiate({ _id: ''rs'', members: [ { _id: 0, host: ''mongo:27017'' } ] }).ok || rs.status().ok" | mongo --quiet) -eq 1'
-    #   interval: 30s
-    #   start_period: 10s
-
-  redis:
-    image: redis
-    restart: unless-stopped
-    networks:
-      - invenda
-
   openapi:
     image: invenda/openapi:${INVENDA_VERSION}
     restart: unless-stopped
@@ -57,30 +81,6 @@ services:
       - invenda
     healthcheck:
       test: "curl -f http://openapi:8080/healthcheck || exit 1"
-      interval: 30s
-      start_period: 10s
-
-  gateway:
-    image: invenda/gateway:${INVENDA_VERSION}
-    restart: unless-stopped
-    build:
-      context: .
-      dockerfile: gateway/Dockerfile
-      target: ${INVENDA_ENVIRONMENT}
-    environment:
-      - INVENDA_VERSION=${INVENDA_VERSION}
-      - INVENDA_ENVIRONMENT=${INVENDA_ENVIRONMENT}
-    depends_on:
-      - api
-      - openapi
-    ports:
-      - ${INVENDA_BIND_ADDRESS}:${INVENDA_HTTP_PORT}:80
-    volumes:
-      - ./gateway/nginx.conf:/etc/nginx/spec.conf
-    networks:
-      - invenda
-    healthcheck:
-      test: "curl -f http://gateway:80/healthcheck || exit 1"
       interval: 30s
       start_period: 10s
 
