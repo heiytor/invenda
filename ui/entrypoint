@@ -1,0 +1,7 @@
+#!/usr/bin/env python
+
+from utils import ENVIRONMENT, Watcher
+
+if __name__ == "__main__":
+    if ENVIRONMENT == "development":
+        Watcher("/app", backend="pnpm").start()

@@ -40,10 +40,18 @@ class Watcher(FileSystemEventHandler):
                 background = threading.Thread(target=do, args=())
                 background.daemon = True
                 background.start()
+
             case "air":
                 cmd = subprocess.Popen("air", cwd=self.path, shell=True)
                 if cmd.wait() != 0:
-                    raise ValueError(f"air returned non 0 status: {cod}")
+                    raise ValueError(f"air returned non 0 status: {cmd}")
+
+            case "pnpm":
+                cmd = subprocess.Popen("corepack enable pnpm && pnpm dev", cwd=self.path, shell=True)
+                print(cmd)
+                if cmd.wait() != 0:
+                    raise ValueError(f"pnpm returned non 0 status: {cmd}")
+
             case _:
                 raise ValueError("Invalid backend value")
 

@@ -14,6 +14,7 @@
         (final: prev: rec {
           go = prev."go_1_${toString goVersion}";
           nodejs = prev.nodejs_latest;
+          pnpm = prev.nodePackages.pnpm;
         })
       ];
       supportedSystems = [ "x86_64-linux" "aarch64-linux" "x86_64-darwin" "aarch64-darwin" ];
@@ -32,6 +33,7 @@
             gopls
             node2nix
             nodejs
+            pnpm
             python312
             python312Packages.pip
           ];

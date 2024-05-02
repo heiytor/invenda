@@ -30,6 +30,7 @@ services:
       - INVENDA_ENVIRONMENT=${INVENDA_ENVIRONMENT}
     depends_on:
       - api
+      - ui
       - openapi
     ports:
       - ${INVENDA_BIND_ADDRESS}:${INVENDA_HTTP_PORT}:80
@@ -64,6 +65,21 @@ services:
       test: "curl -f http://api:8080/healthcheck || exit 1"
       interval: 30s
       start_period: 10s
+
+  ui:
+    image: invenda/ui:${INVENDA_VERSION}
+    restart: unless-stopped
+    environment:
+      - INVENDA_VERSION=${INVENDA_VERSION}
+      - INVENDA_ENVIRONMENT=${INVENDA_ENVIRONMENT}
+    build:
+      context: .
+      dockerfile: ui/Dockerfile
+      target: ${INVENDA_ENVIRONMENT}
+    networks:
+      - invenda
+    volumes:
+      - ./ui:/app
 
   openapi:
     image: invenda/openapi:${INVENDA_VERSION}
