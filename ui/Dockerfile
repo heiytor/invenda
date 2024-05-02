@@ -8,6 +8,11 @@ RUN mkdir -p /utils
 COPY ./utils /utils
 COPY ./ui/entrypoint /
 
+# Necessary for devscripts/openapi-spec
+RUN apk add openjdk11-jre
+RUN npm install -g @openapitools/openapi-generator-cli
+RUN openapi-generator-cli version-manager set 7.5.0
+
 ENV NEXT_TELEMETRY_DISABLED 1
 ENV PORT 8080
 

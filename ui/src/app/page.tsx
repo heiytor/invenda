@@ -1,15 +1,15 @@
 "use client";
 
 import { useState } from "react";
+import { faEnvelope, faEye, faEyeSlash, faLock } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEnvelope, faEye, faLock } from "@fortawesome/free-solid-svg-icons";
 
 export default function Home() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [passwordVisible, setPasswordVisible] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: any) => {
     e.preventDefault();
     console.log("Email:", email);
     console.log("Password:", password);
@@ -31,8 +31,8 @@ export default function Home() {
               <input
                 type="email"
                 id="email"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 placeholder="Email"
                 className="border rounded p-2 w-full pl-8"
                 required

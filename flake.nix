@@ -33,6 +33,8 @@
             gopls
             node2nix
             nodejs
+            typescript
+            nodePackages.typescript-language-server
             pnpm
             python312
             python312Packages.pip

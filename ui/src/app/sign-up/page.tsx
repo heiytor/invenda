@@ -14,7 +14,7 @@ export default function SignUp() {
     const [termsAccepted, setTermsAccepted] = useState(false);
     const [receiveNotifications, setReceiveNotifications] = useState(false);
 
-    const handleSubmit = (e) => {
+    const handleSubmit = (e: any) => {
         e.preventDefault();
 
         if (!termsAccepted) {
@@ -53,8 +53,8 @@ export default function SignUp() {
                             <input
                                 type="text"
                                 id="name"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
                                 placeholder="Nome"
                                 className="border rounded p-2 w-full pl-8"
                                 required
