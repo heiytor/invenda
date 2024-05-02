@@ -48,9 +48,9 @@ services:
       - INVENDA_VERSION=${INVENDA_VERSION}
       - INVENDA_ENVIRONMENT=${INVENDA_ENVIRONMENT}
     build:
-      context: openapi
-      dockerfile: Dockerfile
-      target: base
+      context: .
+      dockerfile: openapi/Dockerfile
+      target: ${INVENDA_ENVIRONMENT}
     volumes:
       - ./openapi:/openapi
     networks:
@@ -64,8 +64,8 @@ services:
     image: invenda/gateway:${INVENDA_VERSION}
     restart: unless-stopped
     build:
-      context: gateway
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: gateway/Dockerfile
       target: ${INVENDA_ENVIRONMENT}
     environment:
       - INVENDA_VERSION=${INVENDA_VERSION}
@@ -76,13 +76,13 @@ services:
     ports:
       - ${INVENDA_BIND_ADDRESS}:${INVENDA_HTTP_PORT}:80
     volumes:
-      - ./gateway/nginx.conf:/etc/nginx/nginx.conf
+      - ./gateway/nginx.conf:/etc/nginx/spec.conf
     networks:
       - invenda
-    # healthcheck:
-    #   test: "curl -f http://gateway:8080/healthcheck || exit 1"
-    #   interval: 30s
-    #   start_period: 10s
+    healthcheck:
+      test: "curl -f http://gateway:80/healthcheck || exit 1"
+      interval: 30s
+      start_period: 10s
 
 networks:
   invenda:

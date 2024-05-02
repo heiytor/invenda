@@ -3,31 +3,32 @@ FROM golang:1.22.2-alpine3.19 AS base
 
 RUN apk add curl
 
+# Entrypoint and entrypoint utils
+RUN apk add --no-cache python3 py3-pip py3-watchdog curl
+RUN mkdir -p /utils
+COPY ./utils /utils
+COPY api/entrypoint /
+
 WORKDIR $GOPATH/src/github.com/heiytor/invenda/api
 
-# Copy API secret keys
+# Secret pairs
 RUN mkdir -p ./../secrets
 COPY secrets/api-private.pem ./../secrets
 COPY secrets/api-public.pem ./../secrets
 
+# Download go packages
 COPY api/go.mod api/go.sum .
 RUN go mod download
 
-# development target
+ENTRYPOINT ["/entrypoint"]
+
 FROM base AS development
 
-# refresh is used to refreshs the server when any file is updated
-RUN go install github.com/markbates/refresh@v1.11.1
-
-WORKDIR $GOPATH/src/github.com/heiytor/invenda/api
+# Download air and sync files to live reload
+WORKDIR $GOPATH/src/github.com/heiytor/invenda/api/
+RUN go install github.com/cosmtrek/air@latest
 COPY api . 
 
-COPY api/entrypoint.sh /entrypoint.sh
-
-WORKDIR $GOPATH/src/github.com/heiytor/invenda/api/cmd
-ENTRYPOINT /entrypoint.sh
-
-# production target
 FROM base AS production
-# TODO
 
+# ...

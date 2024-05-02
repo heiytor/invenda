@@ -1,0 +1,18 @@
+#!/usr/bin/env python
+
+import subprocess
+from utils import ENVIRONMENT, Watcher
+
+def bundle():
+    cmd = "redocly bundle 'spec/openapi.yaml' -o bundled/openapi.json"
+    subprocess.run(cmd, shell=True, check=True)
+
+
+if __name__ == "__main__":
+    if ENVIRONMENT == "development":
+        def handle(watcher, event):
+            bundle()
+
+        Watcher("/openapi/spec/", backend="watchdog", on_any=handle).start()
+
+    subprocess.run("npm run serve", shell=True, check=True)

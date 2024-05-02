@@ -3,22 +3,15 @@
 import sys
 import subprocess
 import os
+import time
+from datetime import datetime, timedelta
+from utils import ENVIRONMENT
 
-ENVIRONMENT = os.getenv("INVENDA_ENVIRONMENT")
-
-def watch():
-    pass
-
-
-def start():
-    arg = " ".join(sys.argv[1:])
-    subprocess.run(arg, shell=True)
+def bundle():
+    cmd = "gomplate -f /etc/nginx/spec.conf -o /etc/nginx/nginx.conf"
+    subprocess.run(cmd, shell=True, check=True)
 
 
 if __name__ == "__main__":
-    print("Starting NGINX.")
-
-    if ENVIRONMENT == "development":
-        watch()
-    
-    start()
+    bundle()
+    subprocess.run("/usr/sbin/nginx -g 'daemon off;'", shell=True, check=True)

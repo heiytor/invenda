@@ -1,0 +1,16 @@
+root = "../"
+
+[build]
+  cmd = "go build cmd/... -o app"
+  bin = "/usr/bin/true"
+  delay = 1000
+  exclude_regex = ["_test.go"]
+  exclude_unchanged = false
+  follow_symlink = false
+  include_dir = ["api"]
+  include_ext = ["go"]
+  kill_delay = "0s"
+  stop_on_error = true
+
+[misc]
+  clean_on_exit = true

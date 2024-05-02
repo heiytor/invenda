@@ -1,8 +1,9 @@
 # secrets (e.g.) ed25519 key pairs
 secrets/*
 
-# Docker binaries
+# Docker binaries and tmp
 api/app
+api/cmd/tmp
 
 ### GO ###
 # Binaries for programs and plugins
