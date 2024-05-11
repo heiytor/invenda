@@ -46,10 +46,10 @@ func (ns *Namespace) WithoutPermissions() {
 }
 
 type Member struct {
-	ID          string            `json:"id" bson:"_id"`
-	AddedAt     time.Time         `json:"added_at" bson:"added_at"`
-	Owner       bool              `json:"owner" bson:"owner"`
-	Permissions []auth.Permission `json:"permissions,omitempty" bson:"permissions"`
+	ID          string           `json:"id" bson:"_id"`
+	AddedAt     time.Time        `json:"added_at" bson:"added_at"`
+	Owner       bool             `json:"owner" bson:"owner"`
+	Permissions auth.Permissions `json:"permissions,omitempty" bson:"permissions"`
 }
 
 type NamespaceChanges struct {

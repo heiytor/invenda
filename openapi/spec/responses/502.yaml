@@ -1,0 +1,6 @@
+description: Um erro inesperado aconteceu no gateway. 
+content:
+  text/plain:
+    schema:
+      type: string
+      example: Bad Gateway 

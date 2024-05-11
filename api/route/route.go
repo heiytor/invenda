@@ -3,6 +3,8 @@ package route
 import (
 	"net/http"
 
+	"github.com/heiytor/invenda/api/pkg/cache"
+	"github.com/heiytor/invenda/api/pkg/models"
 	"github.com/heiytor/invenda/api/pkg/validator"
 	"github.com/heiytor/invenda/api/route/pkg/middleware"
 	"github.com/heiytor/invenda/api/route/pkg/utils"
@@ -19,13 +21,15 @@ const (
 	GroupInternal Group = "internal"
 )
 
-type route struct {
+type Handler echo.HandlerFunc
+type ProtectedHandler func(c echo.Context, s *models.Session) error
+
+type route[T any] struct {
 	method      string
 	path        string
-	protected   bool
 	group       Group
 	middlewares []echo.MiddlewareFunc
-	handler     echo.HandlerFunc
+	handler     T
 }
 
 type Routes struct {
@@ -33,7 +37,7 @@ type Routes struct {
 	E       *echo.Echo
 }
 
-func New(service service.Service) *Routes {
+func New(service service.Service, cache cache.Cache) *Routes {
 	r := &Routes{E: echo.New(), service: service}
 
 	r.E.Binder = &utils.Binder{}
@@ -42,41 +46,66 @@ func New(service service.Service) *Routes {
 
 	r.E.Use(echomiddleware.RequestID())
 
-	r.bindRoutes()
+	// healthcheck is used by docker to check if the container is healthy
+	r.E.GET("/healthcheck", func(c echo.Context) error {
+		return c.NoContent(http.StatusOK)
+	})
+
+	handlers, protectedHandlers := r.allRoutes()
+	pub := r.E.Group(string(GroupPublic))
+	pri := r.E.Group(string(GroupInternal))
+
+	for _, h := range handlers {
+		log.Info().
+			Str("method", h.method).
+			Str("path", h.path).
+			Str("group", string(h.group)).
+			Msg("Registering non-protected route")
+
+		switch h.group {
+		case GroupPublic:
+			pub.Add(h.method, h.path, h.handler, h.middlewares...)
+		case GroupInternal:
+			pri.Add(h.method, h.path, h.handler, h.middlewares...)
+		}
+	}
+
+	for _, h := range protectedHandlers {
+		log.Info().
+			Str("method", h.method).
+			Str("path", h.path).
+			Str("group", string(h.group)).
+			Msg("Registering protected route")
+
+		switch h.group {
+		case GroupPublic:
+			pub.Add(h.method, h.path, middleware.Auth(cache, h.handler), h.middlewares...)
+		case GroupInternal:
+			pri.Add(h.method, h.path, middleware.Auth(cache, h.handler), h.middlewares...)
+		}
+	}
 
 	return r
 }
 
-func (rs *Routes) bindRoutes() {
-	// healthcheck is used by docker to check if the container is healthy
-	rs.E.GET("/healthcheck", func(c echo.Context) error {
-		return c.NoContent(http.StatusOK)
-	})
-
-	routes := []*route{}
-	routes = append(routes, rs.userRoutes()...)
-	routes = append(routes, rs.namespaceRoutes()...)
-
-	pub := rs.E.Group(string(GroupPublic))
-	pri := rs.E.Group(string(GroupInternal))
-
-	for _, r := range routes {
-		log.Info().
-			Str("method", r.method).
-			Str("path", r.path).
-			Bool("protected", r.protected).
-			Str("group", string(r.group)).
-			Msg("Registering route")
-
-		if r.protected {
-			r.middlewares = append([]echo.MiddlewareFunc{middleware.Auth}, r.middlewares...)
-		}
-
-		switch r.group {
-		case GroupPublic:
-			pub.Add(r.method, r.path, r.handler, r.middlewares...)
-		case GroupInternal:
-			pri.Add(r.method, r.path, r.handler, r.middlewares...)
-		}
+func (rs *Routes) allRoutes() ([]*route[echo.HandlerFunc], []*route[ProtectedHandler]) {
+	handlers := []*route[echo.HandlerFunc]{
+		rs.userGet(),
+		rs.userCreate(),
+		rs.userCreateSession(),
+		rs.userUpdateSession(),
 	}
+
+	protectedHandlers := []*route[ProtectedHandler]{
+		rs.userUpdate(),
+		rs.userDelete(),
+
+		rs.namespaceGet(),
+		rs.namespaceList(),
+		rs.namespaceCreate(),
+		rs.namespaceUpdate(),
+		rs.namespaceDelete(),
+	}
+
+	return handlers, protectedHandlers
 }

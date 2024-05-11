@@ -50,6 +50,7 @@ services:
       - INVENDA_VERSION=${INVENDA_VERSION}
       - INVENDA_ENVIRONMENT=${INVENDA_ENVIRONMENT}
       - INVENDA_MONGO_URI=${INVENDA_MONGO_URI}
+      - INVENDA_REDIS_URI=${INVENDA_REDIS_URI}
     build:
       context: .
       dockerfile: api/Dockerfile

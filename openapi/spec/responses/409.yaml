@@ -1,0 +1,7 @@
+description: |
+  A entidade enviada apresenta conflito em um ou mais campos únicos. Os campos
+  em conflito serão retornados em `details`.
+content:
+  application/json:
+    schema:
+      $ref: ../schemas/error.yaml

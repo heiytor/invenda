@@ -16,13 +16,18 @@ type User struct {
 	Name      string    `json:"name" bson:"name"`
 	Email     string    `json:"email" bson:"email"`
 	Password  string    `json:"password,omitempty" bson:"password"`
+
+	// PreferredNamespace specifies the namespace the user should use when logging in.
+	// The value must be updated whenever the user switches the session to a different namespace.
+	PreferredNamespace string `json:"-" bson:"preferred_namespace"`
 }
 
 type UserChanges struct {
-	Name      string    `bson:"name,omitempty"`
-	Email     string    `bson:"email,omitempty"`
-	Password  string    `bson:"password,omitempty"`
-	UpdatedAt time.Time `bson:"updated_at,omitempty"`
+	Name               string    `bson:"name,omitempty"`
+	Email              string    `bson:"email,omitempty"`
+	Password           string    `bson:"password,omitempty"`
+	UpdatedAt          time.Time `bson:"updated_at,omitempty"`
+	PreferredNamespace string    `bson:"preferred_namespace,omitempty"`
 }
 
 type UserClaims struct {

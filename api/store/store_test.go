@@ -79,6 +79,7 @@ type fixture string
 const (
 	fixtureUser      fixture = "user"
 	fixtureNamespace fixture = "namespace"
+	fixtureSession   fixture = "session"
 )
 
 func (*Server) apply(fixtures ...fixture) error {

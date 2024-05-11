@@ -1,8 +1,40 @@
 package auth
 
-import "slices"
+import (
+	"slices"
+	"strings"
+)
 
 type Permission string
+
+func (p Permission) String() string {
+	return string(p)
+}
+
+type Permissions []Permission
+
+func (ps Permissions) String() string {
+	str := ""
+	for i, p := range ps {
+		switch i {
+		case 0:
+			str = p.String()
+		default:
+			str = str + "-" + p.String()
+		}
+	}
+
+	return str
+}
+
+func (ps Permissions) FromString(str string) Permissions {
+	parts := strings.Split(str, "-")
+	for _, p := range parts {
+		ps = append(ps, Permission(p))
+	}
+
+	return ps
+}
 
 const (
 	NamespaceRead   Permission = "namespace:read"

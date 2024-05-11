@@ -1,0 +1,5 @@
+description: A entidade é inválida devido a um erro de formatação ou a ausência de um campo obrigatório.
+content:
+  application/json:
+    schema:
+      $ref: ../schemas/error.yaml

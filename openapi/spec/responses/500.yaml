@@ -1,0 +1,6 @@
+description: Um erro inesperado aconteceu no servidor.
+content:
+  text/plain:
+    schema:
+      type: string
+      example: Internal Server Error

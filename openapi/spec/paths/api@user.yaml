@@ -1,40 +1,126 @@
 get:
   operationId: getUser
-  summary: Get User
+  summary: Obter usuário
   tags:
     - user
   security:
     - jwt: []
   responses:
     "200":
-      description: Success to get the user.
+      description: |
+        Dados atualizado com sucesso.
+      content:
+        application/json:
+          schema:
+            $ref: ../schemas/user.yaml
+    "404":
+      $ref: ../responses/404.yaml
+    "500":
+      $ref: ../responses/500.yaml
+    "502":
+      $ref: ../responses/502.yaml
 post:
   operationId: createUser
-  summary: Create User
+  summary: Registrar um usuário
+  description: |
+    PLACEHOLDER
   tags:
     - user
   security:
     - jwt: []
+  requestBody:
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            name:
+              type: string
+              example: John Doe
+            email:
+              type: string
+              example: john.doe@test.com
+            password:
+              type: string
+              example: "`3p5d-H5feToo\"H]\"L,yOG__c"
+          required:
+            - name
+            - email
+            - password
   responses:
-    "201":
-      description: Success to create a user.
+    "202":
+      description: |
+        Usuário criado com sucesso. O usuário precisa ser confirmado (por meio de um e-mail) antes de
+        realizar qualquer operação.
+      headers:
+        X-Inserted-ID:
+          description: ID do usuário criado.
+          schema:
+            type: string
+            readOnly: true
+            example: usr_01HWWAPS2RVSNV21BJTK96QPDD
+    "400":
+      $ref: ../responses/400.yaml
+    "409":
+      $ref: ../responses/409.yaml
+    "422":
+      $ref: ../responses/422.yaml
+    "500":
+      $ref: ../responses/500.yaml
+    "502":
+      $ref: ../responses/502.yaml
 patch:
   operationId: updateUser
-  summary: Update User
+  summary: Atualizar dados do usuário
   tags:
     - user
   security:
     - jwt: []
+  requestBody:
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            name:
+              type: string
+              example: John Doe
+            email:
+              type: string
+              example: john.doe@test.com
+            password:
+              type: string
+              example: "`3p5d-H5feToo\"H]\"L,yOG__c"
   responses:
     "200":
-      description: Success to update a user.
+      description: |
+        Dados atualizado com sucesso.
+    "400":
+      $ref: ../responses/400.yaml
+    "404":
+      $ref: ../responses/404.yaml
+    "409":
+      $ref: ../responses/409.yaml
+    "422":
+      $ref: ../responses/422.yaml
+    "500":
+      $ref: ../responses/500.yaml
+    "502":
+      $ref: ../responses/502.yaml
 delete:
   operationId: deleteUser
-  summary: Delete User
+  summary: Excluir usuário
   tags:
     - user
   security:
     - jwt: []
   responses:
     "204":
-      description: Success to delete a user.
+      description: |
+        Usuário deletado com sucesso.
+    "404":
+      $ref: ../responses/404.yaml
+    "500":
+      $ref: ../responses/500.yaml
+    "502":
+      $ref: ../responses/502.yaml

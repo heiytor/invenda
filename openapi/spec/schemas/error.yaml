@@ -1,0 +1,26 @@
+type: object
+properties:
+  error:
+    type: string
+    description: |
+      Descricao generica do erro, geralmente uma unica palavra.
+    example: erro
+  layer:
+    type: integer
+    description: |
+      Camada na qual o erro foi gerado. Este campo pode ser ignorado pelo consumidor, pois é útil apenas para depurar o código.
+    example: 0
+  details:
+    type: object
+    description: |
+      Array de pares chave-valor contendo detalhes sobre o erro levantado. Um exemplo de uso é quando ocorre um erro de entidade;
+      nesse caso, o seguinte campo será retornado ao tentar cadastrar um usuário com uma senha inválida:
+      ```json
+      "password": [
+        "password must be between 8 and 64 characters long, and contain at least one number, one uppercase letter, one lowercase letter, and one special character."
+      ]
+      ```
+    properties:
+      detailed-description:
+        type: string
+        example: Descrição do erro detalhada.

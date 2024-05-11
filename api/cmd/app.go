@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"time"
 
+	"github.com/heiytor/invenda/api/pkg/cache"
 	"github.com/heiytor/invenda/api/pkg/env"
 	"github.com/heiytor/invenda/api/pkg/secretkeys"
 	"github.com/heiytor/invenda/api/route"
@@ -41,6 +42,13 @@ func main() {
 			Msg("Environment variable loaded")
 	}
 
+	cache, err := cache.Connect(env.E().RedisURI, 0)
+	if err != nil {
+		log.Panic().
+			Err(err).
+			Msg("Unable to connect to Redis")
+	}
+
 	client, preferredDb, err := store.Connect(ctx, env.E().MongoURI)
 	if err != nil {
 		log.Panic().
@@ -57,8 +65,7 @@ func main() {
 			Msg("Unable to create the store")
 	}
 
-	service := service.New(store)
-	routes := route.New(service)
+	routes := route.New(service.New(store, cache), cache)
 
 	// Configure logger
 	logger := lecho.From(log.Logger)

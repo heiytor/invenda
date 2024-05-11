@@ -6,30 +6,19 @@ import (
 
 	"github.com/heiytor/invenda/api/pkg/auth"
 	"github.com/heiytor/invenda/api/pkg/errors"
+	"github.com/heiytor/invenda/api/pkg/models"
 	"github.com/heiytor/invenda/api/pkg/requests"
 	"github.com/heiytor/invenda/api/route/pkg/utils"
 	"github.com/labstack/echo/v4"
 )
 
-func (rs *Routes) namespaceRoutes() []*route {
-	return []*route{
-		rs.namespaceGet(),
-		rs.namespaceList(),
-		rs.namespaceCreate(),
-		rs.namespaceUpdate(),
-		rs.namespaceDelete(),
-	}
-}
-
-func (rs *Routes) namespaceList() *route {
-	return &route{
+func (rs *Routes) namespaceList() *route[ProtectedHandler] {
+	return &route[ProtectedHandler]{
 		method:      http.MethodGet,
 		path:        "/namespaces",
-		protected:   true,
 		group:       GroupPublic,
 		middlewares: []echo.MiddlewareFunc{},
-		handler: func(c echo.Context) error {
-			claims := utils.UserClaims(c)
+		handler: func(c echo.Context, s *models.Session) error {
 			ctx := c.Request().Context()
 			req := new(requests.ListNamespace)
 
@@ -44,7 +33,7 @@ func (rs *Routes) namespaceList() *route {
 				return err
 			}
 
-			ns, count, err := rs.service.ListNamespace(ctx, claims.Subject, req)
+			ns, count, err := rs.service.ListNamespace(ctx, s.UserID, req)
 			c.Response().Header().Set("X-Total-Count", strconv.FormatInt(count, 10))
 
 			if err != nil {
@@ -56,18 +45,16 @@ func (rs *Routes) namespaceList() *route {
 	}
 }
 
-func (rs *Routes) namespaceGet() *route {
-	return &route{
+func (rs *Routes) namespaceGet() *route[ProtectedHandler] {
+	return &route[ProtectedHandler]{
 		method:      http.MethodGet,
 		path:        "/namespace",
-		protected:   true,
 		group:       GroupPublic,
 		middlewares: []echo.MiddlewareFunc{},
-		handler: func(c echo.Context) error {
-			claims := utils.UserClaims(c)
+		handler: func(c echo.Context, s *models.Session) error {
 			ctx := c.Request().Context()
 
-			if !auth.Report(claims.Permissions, auth.NamespaceRead) {
+			if !auth.Report(s.Permissions, auth.NamespaceRead) {
 				return errors.
 					New().
 					Layer(errors.LayerRoute).
@@ -76,7 +63,7 @@ func (rs *Routes) namespaceGet() *route {
 					Msg(errors.MsgInsufficientPermission)
 			}
 
-			ns, err := rs.service.GetNamespace(ctx, claims.Subject, claims.Namespace)
+			ns, err := rs.service.GetNamespace(ctx, s.UserID, s.NamespaceID)
 			if err != nil {
 				return err
 			}
@@ -86,14 +73,13 @@ func (rs *Routes) namespaceGet() *route {
 	}
 }
 
-func (rs *Routes) namespaceCreate() *route {
-	return &route{
+func (rs *Routes) namespaceCreate() *route[ProtectedHandler] {
+	return &route[ProtectedHandler]{
 		method:      http.MethodPost,
 		path:        "/namespace",
-		protected:   true,
 		group:       GroupPublic,
 		middlewares: []echo.MiddlewareFunc{},
-		handler: func(c echo.Context) error {
+		handler: func(c echo.Context, s *models.Session) error {
 			ctx := c.Request().Context()
 			req := new(requests.CreateNamespace)
 
@@ -105,7 +91,7 @@ func (rs *Routes) namespaceCreate() *route {
 				return err
 			}
 
-			insertedID, err := rs.service.CreateNamespace(ctx, utils.UserClaims(c).Subject, req)
+			insertedID, err := rs.service.CreateNamespace(ctx, s.UserID, req)
 			if err != nil {
 				return err
 			}
@@ -116,15 +102,13 @@ func (rs *Routes) namespaceCreate() *route {
 	}
 }
 
-func (rs *Routes) namespaceUpdate() *route {
-	return &route{
+func (rs *Routes) namespaceUpdate() *route[ProtectedHandler] {
+	return &route[ProtectedHandler]{
 		method:      http.MethodPatch,
 		path:        "/namespace",
-		protected:   true,
 		group:       GroupPublic,
 		middlewares: []echo.MiddlewareFunc{},
-		handler: func(c echo.Context) error {
-			claims := utils.UserClaims(c)
+		handler: func(c echo.Context, s *models.Session) error {
 			ctx := c.Request().Context()
 			req := new(requests.UpdateNamespace)
 
@@ -136,7 +120,7 @@ func (rs *Routes) namespaceUpdate() *route {
 				return err
 			}
 
-			if !auth.Report(claims.Permissions, auth.NamespaceWrite) {
+			if !auth.Report(s.Permissions, auth.NamespaceWrite) {
 				return errors.
 					New().
 					Layer(errors.LayerRoute).
@@ -145,7 +129,7 @@ func (rs *Routes) namespaceUpdate() *route {
 					Msg(errors.MsgInsufficientPermission)
 			}
 
-			if err := rs.service.UpdateNamespace(ctx, claims.Subject, claims.Namespace, req); err != nil {
+			if err := rs.service.UpdateNamespace(ctx, s.UserID, s.NamespaceID, req); err != nil {
 				return err
 			}
 
@@ -154,14 +138,13 @@ func (rs *Routes) namespaceUpdate() *route {
 	}
 }
 
-func (rs *Routes) namespaceDelete() *route {
-	return &route{
+func (rs *Routes) namespaceDelete() *route[ProtectedHandler] {
+	return &route[ProtectedHandler]{
 		method:      http.MethodDelete,
 		path:        "/namespace",
-		protected:   true,
 		group:       GroupPublic,
 		middlewares: []echo.MiddlewareFunc{},
-		handler: func(c echo.Context) error {
+		handler: func(c echo.Context, s *models.Session) error {
 			claims := utils.UserClaims(c)
 			ctx := c.Request().Context()
 
@@ -174,7 +157,7 @@ func (rs *Routes) namespaceDelete() *route {
 					Msg(errors.MsgInsufficientPermission)
 			}
 
-			if err := rs.service.DeleteNamespace(ctx, claims.Namespace); err != nil {
+			if err := rs.service.DeleteNamespace(ctx, s.NamespaceID); err != nil {
 				return err
 			}
 

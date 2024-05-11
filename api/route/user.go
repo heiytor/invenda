@@ -8,21 +8,10 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func (rs *Routes) userRoutes() []*route {
-	return []*route{
-		rs.userGet(),
-		rs.userCreate(),
-		rs.userUpdate(),
-		rs.userDelete(),
-		rs.userAuth(),
-	}
-}
-
-func (rs *Routes) userGet() *route {
-	return &route{
+func (rs *Routes) userGet() *route[echo.HandlerFunc] {
+	return &route[echo.HandlerFunc]{
 		method:      http.MethodGet,
 		path:        "/user/:id",
-		protected:   false,
 		group:       GroupPublic,
 		middlewares: []echo.MiddlewareFunc{},
 		handler: func(c echo.Context) error {
@@ -47,11 +36,10 @@ func (rs *Routes) userGet() *route {
 	}
 }
 
-func (rs *Routes) userCreate() *route {
-	return &route{
+func (rs *Routes) userCreate() *route[echo.HandlerFunc] {
+	return &route[echo.HandlerFunc]{
 		method:      http.MethodPost,
 		path:        "/user",
-		protected:   false,
 		group:       GroupPublic,
 		middlewares: []echo.MiddlewareFunc{},
 		handler: func(c echo.Context) error {
@@ -77,14 +65,13 @@ func (rs *Routes) userCreate() *route {
 	}
 }
 
-func (rs *Routes) userUpdate() *route {
-	return &route{
+func (rs *Routes) userUpdate() *route[ProtectedHandler] {
+	return &route[ProtectedHandler]{
 		method:      http.MethodPatch,
 		path:        "/user",
-		protected:   true,
 		group:       GroupPublic,
 		middlewares: []echo.MiddlewareFunc{},
-		handler: func(c echo.Context) error {
+		handler: func(c echo.Context, s *models.Session) error {
 			ctx := c.Request().Context()
 			req := new(requests.UpdateUser)
 
@@ -96,8 +83,7 @@ func (rs *Routes) userUpdate() *route {
 				return err
 			}
 
-			claims := c.Get("claims").(*models.UserClaims)
-			usr, err := rs.service.UpdateUser(ctx, claims.Subject, req)
+			usr, err := rs.service.UpdateUser(ctx, s.UserID, req)
 			if err != nil {
 				return err
 			}
@@ -107,18 +93,16 @@ func (rs *Routes) userUpdate() *route {
 	}
 }
 
-func (rs *Routes) userDelete() *route {
-	return &route{
+func (rs *Routes) userDelete() *route[ProtectedHandler] {
+	return &route[ProtectedHandler]{
 		method:      http.MethodDelete,
 		path:        "/user",
-		protected:   true,
 		group:       GroupPublic,
 		middlewares: []echo.MiddlewareFunc{},
-		handler: func(c echo.Context) error {
+		handler: func(c echo.Context, s *models.Session) error {
 			ctx := c.Request().Context()
 
-			claims := c.Get("claims").(*models.UserClaims)
-			if err := rs.service.DeleteUser(ctx, claims.Subject); err != nil {
+			if err := rs.service.DeleteUser(ctx, s.UserID); err != nil {
 				return err
 			}
 
@@ -127,16 +111,15 @@ func (rs *Routes) userDelete() *route {
 	}
 }
 
-func (rs *Routes) userAuth() *route {
-	return &route{
+func (rs *Routes) userCreateSession() *route[echo.HandlerFunc] {
+	return &route[echo.HandlerFunc]{
 		method:      http.MethodPost,
-		path:        "/user/auth",
-		protected:   false,
+		path:        "/user/session",
 		group:       GroupPublic,
 		middlewares: []echo.MiddlewareFunc{},
 		handler: func(c echo.Context) error {
 			ctx := c.Request().Context()
-			req := new(requests.AuthUser)
+			req := new(requests.CreateSession)
 
 			if err := c.Bind(req); err != nil {
 				return err
@@ -146,12 +129,40 @@ func (rs *Routes) userAuth() *route {
 				return err
 			}
 
-			claims, token, err := rs.service.AuthUser(ctx, req)
+			insertedID, err := rs.service.CreateSession(ctx, req)
 			if err != nil {
 				return err
 			}
 
-			return c.JSON(http.StatusOK, map[string]interface{}{"token": token, "claims": claims})
+			c.Response().Header().Set("X-Inserted-Id", insertedID)
+			return c.NoContent(http.StatusOK)
+		},
+	}
+}
+
+func (rs *Routes) userUpdateSession() *route[echo.HandlerFunc] {
+	return &route[echo.HandlerFunc]{
+		method:      http.MethodPut,
+		path:        "/user/session/:id",
+		group:       GroupPublic,
+		middlewares: []echo.MiddlewareFunc{},
+		handler: func(c echo.Context) error {
+			ctx := c.Request().Context()
+			req := new(requests.UpdateSession)
+
+			if err := c.Bind(req); err != nil {
+				return err
+			}
+
+			if err := c.Validate(req); err != nil {
+				return err
+			}
+
+			if err := rs.service.UpdateSession(ctx, req); err != nil {
+				return err
+			}
+
+			return c.NoContent(http.StatusOK)
 		},
 	}
 }

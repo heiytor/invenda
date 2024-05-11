@@ -7,7 +7,6 @@ import (
 
 	"github.com/heiytor/invenda/api/pkg/errors"
 	"github.com/heiytor/invenda/api/pkg/hash"
-	"github.com/heiytor/invenda/api/pkg/jwt"
 	"github.com/heiytor/invenda/api/pkg/models"
 	"github.com/heiytor/invenda/api/pkg/requests"
 	"github.com/heiytor/invenda/api/store"
@@ -18,7 +17,6 @@ type User interface {
 	CreateUser(ctx context.Context, req *requests.CreateUser) (insertedID string, err error)
 	UpdateUser(ctx context.Context, id string, req *requests.UpdateUser) (usr *models.User, err error)
 	DeleteUser(ctx context.Context, id string) (err error)
-	AuthUser(ctx context.Context, req *requests.AuthUser) (claims *models.UserClaims, token string, err error)
 }
 
 func (s *service) GetUser(ctx context.Context, req *requests.GetUser) (*models.User, error) {
@@ -79,42 +77,4 @@ func (s *service) UpdateUser(ctx context.Context, id string, req *requests.Updat
 
 func (s *service) DeleteUser(ctx context.Context, id string) error {
 	return mapError(s.store.User.Delete(ctx, id), s.store.User.Entity())
-}
-
-func (s *service) AuthUser(ctx context.Context, req *requests.AuthUser) (*models.UserClaims, string, error) {
-	usr, err := s.store.User.GetByEmail(ctx, req.Identifier)
-	if err != nil {
-		return nil, "", errors.
-			New().
-			Attr("internal", err).
-			Code(http.StatusNotFound).
-			Layer(errors.LayerService).
-			Msg("wrong identifer and/or password")
-	}
-
-	if !hash.Compare(req.Password, usr.Password) {
-		return nil, "", errors.
-			New().
-			Code(http.StatusNotFound).
-			Layer(errors.LayerService).
-			Msg("wrong identifer and/or password")
-	}
-
-	// TODO: usr.PreferredNamespace
-	ns, err := s.store.Namespace.GetFirst(ctx, usr.ID)
-	if err != nil {
-		return nil, "", errors.
-			New().
-			Attr("internal", err).
-			Code(http.StatusUnauthorized).
-			Layer(errors.LayerService).
-			Msg("user does not have any namespace")
-	}
-
-	member, _ := ns.FindMember(usr.ID)
-
-	claims := &models.UserClaims{Email: usr.Email, Namespace: ns.ID, Permissions: member.Permissions}
-	claims.RegisteredClaims.Subject = usr.ID
-
-	return claims, jwt.Encode(claims), nil
 }

@@ -1,0 +1,11 @@
+{
+    "session": {
+        "ss_01HX6FABC3SRPVK6VSM48DWMMQ": {
+            "user_id":    "usr_01HNGJ2BTGQAHAZ1XNYZQPG719",
+            "started_at": "2023-01-01T12:00:00.000Z",
+            "ended_at":   "2023-01-01T12:00:00.000Z",
+            "state":      "active",
+            "source_ip":  "127.0.0.1"
+        }
+    }
+}

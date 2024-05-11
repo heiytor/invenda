@@ -16,7 +16,12 @@ type UpdateUser struct {
 	Password string `json:"password" validate:"password"`
 }
 
-type AuthUser struct {
+type CreateSession struct {
 	Identifier string `json:"identifier" validate:"required"`
 	Password   string `json:"password" validate:"required"`
+}
+
+type UpdateSession struct {
+	ID        string `param:"id" validate:"required"`
+	Namespace string `json:"namespace"`
 }

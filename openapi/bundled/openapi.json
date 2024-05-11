@@ -7,7 +7,7 @@
   },
   "servers": [
     {
-      "url": "http://localhost:3334"
+      "url": "https://cloud.invenda.com"
     }
   ],
   "tags": [
@@ -25,10 +25,10 @@
     }
   ],
   "paths": {
-    "/user": {
+    "/api/user": {
       "get": {
         "operationId": "getUser",
-        "summary": "Get User",
+        "summary": "Obter usuário",
         "tags": [
           "user"
         ],
@@ -39,13 +39,30 @@
         ],
         "responses": {
           "200": {
-            "description": "Success to get the user."
+            "description": "Dados atualizado com sucesso.\n",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/user"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          },
+          "502": {
+            "$ref": "#/components/responses/502"
           }
         }
       },
       "post": {
         "operationId": "createUser",
-        "summary": "Create User",
+        "summary": "Registrar um usuário",
+        "description": "PLACEHOLDER\n",
         "tags": [
           "user"
         ],
@@ -54,15 +71,68 @@
             "jwt": []
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "example": "John Doe"
+                  },
+                  "email": {
+                    "type": "string",
+                    "example": "john.doe@test.com"
+                  },
+                  "password": {
+                    "type": "string",
+                    "example": "`3p5d-H5feToo\"H]\"L,yOG__c"
+                  }
+                },
+                "required": [
+                  "name",
+                  "email",
+                  "password"
+                ]
+              }
+            }
+          }
+        },
         "responses": {
-          "201": {
-            "description": "Success to create a user."
+          "202": {
+            "description": "Usuário criado com sucesso. O usuário precisa ser confirmado (por meio de um e-mail) antes de\nrealizar qualquer operação.\n",
+            "headers": {
+              "X-Inserted-ID": {
+                "description": "ID do usuário criado.",
+                "schema": {
+                  "type": "string",
+                  "readOnly": true,
+                  "example": "usr_01HWWAPS2RVSNV21BJTK96QPDD"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "409": {
+            "$ref": "#/components/responses/409"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          },
+          "502": {
+            "$ref": "#/components/responses/502"
           }
         }
       },
       "patch": {
         "operationId": "updateUser",
-        "summary": "Update User",
+        "summary": "Atualizar dados do usuário",
         "tags": [
           "user"
         ],
@@ -71,15 +141,56 @@
             "jwt": []
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "example": "John Doe"
+                  },
+                  "email": {
+                    "type": "string",
+                    "example": "john.doe@test.com"
+                  },
+                  "password": {
+                    "type": "string",
+                    "example": "`3p5d-H5feToo\"H]\"L,yOG__c"
+                  }
+                }
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
-            "description": "Success to update a user."
+            "description": "Dados atualizado com sucesso.\n"
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "409": {
+            "$ref": "#/components/responses/409"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          },
+          "502": {
+            "$ref": "#/components/responses/502"
           }
         }
       },
       "delete": {
         "operationId": "deleteUser",
-        "summary": "Delete User",
+        "summary": "Excluir usuário",
         "tags": [
           "user"
         ],
@@ -90,32 +201,75 @@
         ],
         "responses": {
           "204": {
-            "description": "Success to delete a user."
+            "description": "Usuário deletado com sucesso.\n"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          },
+          "502": {
+            "$ref": "#/components/responses/502"
           }
         }
       }
     },
-    "/user/auth": {
+    "/api/user/auth": {
       "post": {
         "operationId": "authUser",
-        "summary": "Auth User",
+        "summary": "Autenticar um usuário.",
+        "description": "Nesse contexto, o status 404 também é retornado quando a senha é inválida.\n",
         "tags": [
           "auth",
           "user"
         ],
-        "security": [
-          {
-            "jwt": []
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "identifier": {
+                    "type": "string",
+                    "example": "john.doe@test.com"
+                  },
+                  "password": {
+                    "type": "string",
+                    "example": "`3p5d-H5feToo\"H]\"L,yOG__c"
+                  }
+                },
+                "required": [
+                  "identifier",
+                  "password"
+                ]
+              }
+            }
           }
-        ],
+        },
         "responses": {
           "200": {
-            "description": "Success to authenticate a user."
+            "description": "Usuário autenticado com sucesso.\n"
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          },
+          "502": {
+            "$ref": "#/components/responses/502"
           }
         }
       }
     },
-    "/namespace": {
+    "/api/namespace": {
       "get": {
         "operationId": "getNamespace",
         "summary": "Get Namespace",
@@ -185,7 +339,7 @@
         }
       }
     },
-    "/namespaces": {
+    "/api/namespaces": {
       "get": {
         "operationId": "listNamespace",
         "summary": "List Namespaces",
@@ -205,5 +359,132 @@
       }
     }
   },
-  "components": {}
+  "components": {
+    "schemas": {
+      "user": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "ID do usuário, sempre representado pelo formato \"usr_{ulid}\".\n",
+            "example": "usr_01HV75DM585A2DDAB9T17DD1CA"
+          },
+          "created_at": {
+            "type": "string",
+            "description": "Horário em UTC em que o usuário foi criado.\n",
+            "example": "2024-04-11T18:06:19.816Z"
+          },
+          "updated_at": {
+            "type": "string",
+            "description": "Horário em UTC da última atualização do usuário.\n",
+            "example": "2024-04-11T18:06:19.816Z"
+          },
+          "last_login": {
+            "type": "string",
+            "description": "Horário em UTC do último login do usuário.\n",
+            "example": "2024-04-11T18:06:19.816Z"
+          },
+          "name": {
+            "type": "string",
+            "description": "Nome do usuário. Este campo não é único, podendo ser repetido entre diferentes usuários. \nO campo é insensível a maiúsculas e minúsculas e pode conter números. O tamanho máximo é de 127 caracteres.\n",
+            "example": "John Doe"
+          },
+          "email": {
+            "type": "string",
+            "description": "Endereço de e-mail do usuário. Este campo é único e não pode ser duplicado entre diferentes usuários, \nalém de ser utilizado para autenticação. O valor será sempre em letras minúsculas, mesmo que inicialmente \ninserido com letras maiúsculas.\n",
+            "example": "john.doe@test.com"
+          }
+        }
+      },
+      "error": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "description": "Descricao generica do erro, geralmente uma unica palavra.\n",
+            "example": "erro"
+          },
+          "layer": {
+            "type": "integer",
+            "description": "Camada na qual o erro foi gerado. Este campo pode ser ignorado pelo consumidor, pois é útil apenas para depurar o código.\n",
+            "example": 0
+          },
+          "details": {
+            "type": "object",
+            "description": "Array de pares chave-valor contendo detalhes sobre o erro levantado. Um exemplo de uso é quando ocorre um erro de entidade;\nnesse caso, o seguinte campo será retornado ao tentar cadastrar um usuário com uma senha inválida:\n```json\n\"password\": [\n  \"password must be between 8 and 64 characters long, and contain at least one number, one uppercase letter, one lowercase letter, and one special character.\"\n]\n```\n",
+            "properties": {
+              "detailed-description": {
+                "type": "string",
+                "example": "Descrição do erro detalhada."
+              }
+            }
+          }
+        }
+      }
+    },
+    "responses": {
+      "400": {
+        "description": "Geralmente signifca o mesmo do status 422.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/error"
+            }
+          }
+        }
+      },
+      "404": {
+        "description": "Entidade não encontrada.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/error"
+            }
+          }
+        }
+      },
+      "409": {
+        "description": "A entidade enviada apresenta conflito em um ou mais campos únicos. Os campos\nem conflito serão retornados em `details`.\n",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/error"
+            }
+          }
+        }
+      },
+      "422": {
+        "description": "A entidade é inválida devido a um erro de formatação ou a ausência de um campo obrigatório.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/error"
+            }
+          }
+        }
+      },
+      "500": {
+        "description": "Um erro inesperado aconteceu no servidor.",
+        "content": {
+          "text/plain": {
+            "schema": {
+              "type": "string",
+              "example": "Internal Server Error"
+            }
+          }
+        }
+      },
+      "502": {
+        "description": "Um erro inesperado aconteceu no gateway.",
+        "content": {
+          "text/plain": {
+            "schema": {
+              "type": "string",
+              "example": "Bad Gateway"
+            }
+          }
+        }
+      }
+    }
+  }
 }

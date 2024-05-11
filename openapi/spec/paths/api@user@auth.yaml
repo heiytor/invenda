@@ -1,11 +1,37 @@
 post:
   operationId: authUser
-  summary: Auth User
+  summary: Autenticar um usuário.
+  description: |
+    Nesse contexto, o status 404 também é retornado quando a senha é inválida.
   tags:
     - auth
     - user
-  security:
-    - jwt: []
+  requestBody:
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            identifier:
+              type: string
+              example: john.doe@test.com
+            password:
+              type: string
+              example: "`3p5d-H5feToo\"H]\"L,yOG__c"
+          required:
+            - identifier
+            - password
   responses:
     "200":
-      description: Success to authenticate a user.
+      description: |
+        Usuário autenticado com sucesso.
+    "400":
+      $ref: ../responses/400.yaml
+    "404":
+      $ref: ../responses/404.yaml
+    "422":
+      $ref: ../responses/422.yaml
+    "500":
+      $ref: ../responses/500.yaml
+    "502":
+      $ref: ../responses/502.yaml

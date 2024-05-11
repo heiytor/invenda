@@ -15,6 +15,7 @@ type Store struct {
 	// User handle all user-related operations.
 	User      User
 	Namespace Namespace
+	Session   Session
 }
 
 func Connect(ctx context.Context, uri string) (*mongodb.Client, string, error) {
@@ -43,6 +44,7 @@ func New(ctx context.Context, client *mongodb.Client, db string) (*Store, error)
 
 	store.User = &user{c: store.db.Collection("user")}
 	store.Namespace = &namespace{c: store.db.Collection("namespace")}
+	store.Session = &session{c: store.db.Collection("session")}
 
 	return store, nil
 }

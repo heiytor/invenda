@@ -320,13 +320,13 @@ func TestAuthUser(t *testing.T) {
 
 	cases := []struct {
 		description string
-		req         *requests.AuthUser
+		req         *requests.CreateSession
 		mocks       func(context.Context, *mocks)
 		expected    Actual
 	}{
 		{
 			description: "fails when unable to retrieve the user",
-			req: &requests.AuthUser{
+			req: &requests.CreateSession{
 				Identifier: "john.doe@test.com",
 				Password:   "secret",
 			},
@@ -344,7 +344,7 @@ func TestAuthUser(t *testing.T) {
 		},
 		{
 			description: "fails when req.Password does not match with usr.Password",
-			req: &requests.AuthUser{
+			req: &requests.CreateSession{
 				Identifier: "john.doe@test.com",
 				Password:   "secret",
 			},
@@ -380,7 +380,7 @@ func TestAuthUser(t *testing.T) {
 		},
 		{
 			description: "fails when req.Password does not match with usr.Password",
-			req: &requests.AuthUser{
+			req: &requests.CreateSession{
 				Identifier: "john.doe@test.com",
 				Password:   "secret",
 			},
@@ -424,7 +424,7 @@ func TestAuthUser(t *testing.T) {
 		},
 		{
 			description: "succeeds to create the user's token",
-			req: &requests.AuthUser{
+			req: &requests.CreateSession{
 				Identifier: "john.doe@test.com",
 				Password:   "secret",
 			},

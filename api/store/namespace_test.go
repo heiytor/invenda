@@ -153,7 +153,7 @@ func TestNamespaceGetMany(t *testing.T) {
 		{
 			description: "succeeds when namespace is not found",
 			userID:      "usr_00000000000000000000000000",
-			query:       &query.Query{Sorter: &query.Sorter{By: "created_at", Order: query.OrderAsc}},
+			query:       &query.Query{Sorter: query.Sorter{By: "created_at", Order: query.OrderAsc}},
 			opts:        []store.GetNamespaceOption{},
 			fixtures:    []fixture{},
 			expected: Actual{
@@ -165,7 +165,7 @@ func TestNamespaceGetMany(t *testing.T) {
 		{
 			description: "succeeds to list the namespaces with order asc",
 			userID:      "usr_01HNGJ2BTGQAHAZ1XNYZQPG719",
-			query:       &query.Query{Sorter: &query.Sorter{By: "created_at", Order: query.OrderAsc}},
+			query:       &query.Query{Sorter: query.Sorter{By: "created_at", Order: query.OrderAsc}},
 			opts:        []store.GetNamespaceOption{},
 			fixtures:    []fixture{fixtureNamespace},
 			expected: Actual{
@@ -206,7 +206,7 @@ func TestNamespaceGetMany(t *testing.T) {
 		{
 			description: "succeeds to list the namespaces with order desc",
 			userID:      "usr_01HNGJ2BTGQAHAZ1XNYZQPG719",
-			query:       &query.Query{Sorter: &query.Sorter{By: "created_at", Order: query.OrderDesc}},
+			query:       &query.Query{Sorter: query.Sorter{By: "created_at", Order: query.OrderDesc}},
 			opts:        []store.GetNamespaceOption{},
 			fixtures:    []fixture{fixtureNamespace},
 			expected: Actual{
@@ -247,7 +247,7 @@ func TestNamespaceGetMany(t *testing.T) {
 		{
 			description: "succeeds to list the namespaces with pagination",
 			userID:      "usr_01HNGJ2BTGQAHAZ1XNYZQPG719",
-			query:       &query.Query{Paginator: &query.Paginator{Page: 1, Size: 1}, Sorter: &query.Sorter{By: "created_at", Order: query.OrderAsc}},
+			query:       &query.Query{Paginator: query.Paginator{Page: 1, Size: 1}, Sorter: query.Sorter{By: "created_at", Order: query.OrderAsc}},
 			opts:        []store.GetNamespaceOption{},
 			fixtures:    []fixture{fixtureNamespace},
 			expected: Actual{
@@ -274,7 +274,7 @@ func TestNamespaceGetMany(t *testing.T) {
 		{
 			description: "succeeds to list the namespaces",
 			userID:      "usr_01HNGJ2BTGQAHAZ1XNYZQPG719",
-			query:       &query.Query{Paginator: &query.Paginator{Page: 2, Size: 1}, Sorter: &query.Sorter{By: "created_at", Order: query.OrderAsc}},
+			query:       &query.Query{Paginator: query.Paginator{Page: 2, Size: 1}, Sorter: query.Sorter{By: "created_at", Order: query.OrderAsc}},
 			opts:        []store.GetNamespaceOption{},
 			fixtures:    []fixture{fixtureNamespace},
 			expected: Actual{

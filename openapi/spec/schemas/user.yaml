@@ -1,0 +1,35 @@
+type: object
+properties:
+  id:
+    type: string
+    description: |
+      ID do usuário, sempre representado pelo formato "usr_{ulid}".
+    example: usr_01HV75DM585A2DDAB9T17DD1CA
+  created_at:
+    type: string
+    description: |
+      Horário em UTC em que o usuário foi criado.
+    example: "2024-04-11T18:06:19.816Z"
+  updated_at:
+    type: string
+    description: |
+      Horário em UTC da última atualização do usuário.
+    example: "2024-04-11T18:06:19.816Z"
+  last_login:
+    type: string
+    description: |
+      Horário em UTC do último login do usuário.
+    example: "2024-04-11T18:06:19.816Z"
+  name:
+    type: string
+    description: |
+      Nome do usuário. Este campo não é único, podendo ser repetido entre diferentes usuários. 
+      O campo é insensível a maiúsculas e minúsculas e pode conter números. O tamanho máximo é de 127 caracteres.
+    example: John Doe
+  email:
+    type: string
+    description: |
+      Endereço de e-mail do usuário. Este campo é único e não pode ser duplicado entre diferentes usuários, 
+      além de ser utilizado para autenticação. O valor será sempre em letras minúsculas, mesmo que inicialmente 
+      inserido com letras maiúsculas.
+    example: john.doe@test.com

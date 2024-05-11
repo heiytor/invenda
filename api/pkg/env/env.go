@@ -14,6 +14,8 @@ type spec struct {
 	Environment string `env:"INVENDA_ENVIRONMENT" validate:"required|in:development,production"`
 	// MongoURI stores the connection URI for MongoDB.
 	MongoURI string `env:"INVENDA_MONGO_URI" validate:"required"`
+	// RedisURI stores the connection URI for MongoDB.
+	RedisURI string `env:"INVENDA_REDIS_URI" validate:"required"`
 }
 
 var s = new(spec)

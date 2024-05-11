@@ -6,7 +6,7 @@ info:
   description: A simple API to demonstrate OpenAPI specification
 
 servers:
-  - url: http://localhost:3334
+  - url: https://cloud.invenda.com
 
 tags:
   - name: auth
@@ -20,11 +20,11 @@ tags:
       PLACEHOLDER
 
 paths:
-  /user:
+  /api/user:
     $ref: paths/api@user.yaml
-  /user/auth:
+  /api/user/auth:
     $ref: paths/api@user@auth.yaml
-  /namespace:
+  /api/namespace:
     $ref: paths/api@namespace.yaml
-  /namespaces:
+  /api/namespaces:
     $ref: paths/api@namespaces.yaml

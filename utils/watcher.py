@@ -13,7 +13,7 @@ class Watcher(FileSystemEventHandler):
 
         if backend == "watchdog":
             self.observer = Observer()
-            self.observer.schedule(self, self.path, recursive=False)
+            self.observer.schedule(self, self.path, recursive=True)
 
             if on_any == None:
                 self.handle_on_created = on_created
